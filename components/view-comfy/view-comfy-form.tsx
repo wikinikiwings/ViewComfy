@@ -1309,7 +1309,7 @@ function FormMediaInput(args: { input: IInputForm, field: any, editMode?: boolea
                     <div key={input.id} className="flex flex-col items-center gap-2">
                         {(input.valueType === "image") && (
                             <>
-                                <SelectableImage imageUrl={media.src} className="max-w-full h-48 flex items-center justify-center overflow-hidden border rounded-md relative">
+                                <SelectableImage imageUrl={media.src} className="max-w-full h-48 flex items-center justify-center overflow-hidden border rounded-md relative bg-muted">
                                     <img
                                         src={media.src}
                                         alt={media.name}
@@ -1515,7 +1515,7 @@ function FormMaskInput(args: { input: IInputForm, field: any, editMode?: boolean
                 <FormControl>
                     {media.src ? (
                         <div key={input.id} className="flex flex-col items-center gap-2">
-                            <SelectableImage imageUrl={getDisplayImg()} className="max-w-full h-48 flex items-center justify-center overflow-hidden border rounded-md relative">
+                            <SelectableImage imageUrl={getDisplayImg()} className="max-w-full h-48 flex items-center justify-center overflow-hidden border rounded-md relative bg-muted">
                                 <img
                                     src={getDisplayImg()}
                                     alt={media.name}

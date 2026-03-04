@@ -142,12 +142,12 @@ function Thumbnail({ file, onRemove }: { file: File; onRemove: () => void }) {
     }, [file]);
 
     return (
-        <div className="relative group w-32 h-32 rounded-md overflow-hidden border border-border flex-shrink-0">
+        <div className="relative group w-32 h-32 rounded-md overflow-hidden border border-border flex-shrink-0 bg-muted">
             {src && (
                 <img
                     src={src}
                     alt={file.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     title={file.name}
                 />
             )}
