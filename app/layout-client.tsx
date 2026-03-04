@@ -12,6 +12,8 @@ import { ImageComparisonProvider } from "@/components/comparison/image-compariso
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { UserProvider } from "@/app/providers/user-provider";
+import { UsernameModal } from "@/components/username-modal";
 
 const settingsService = new SettingsService();
 
@@ -52,6 +54,8 @@ export default function ClientRootLayout({ children }: { children: React.ReactNo
 
   const content = (
     <Suspense>
+      <UserProvider>
+      <UsernameModal />
       <ImageComparisonProvider>
         <div className="flex flex-col h-screen w-full overflow-hidden" style={{ '--top-nav-height': '57px', '--sidebar-width': '12rem' } as React.CSSProperties}>
           <TopNav />
@@ -69,6 +73,7 @@ export default function ClientRootLayout({ children }: { children: React.ReactNo
         <DeployDialog open={deployWindow} setOpen={setDeployWindow} />
         <Toaster />
       </ImageComparisonProvider>
+      </UserProvider>
     </Suspense>
   );
 

@@ -6,20 +6,32 @@ import { ImageMasked, PromptResult } from "@/app/models/prompt-result";
 import { v4 as uuidv4 } from 'uuid';
 
 export const usePostPlayground = () => {
-    const [loading, setLoading] = useState(false);
+    const [activeJobs, setActiveJobs] = useState(0);
+    const loading = activeJobs > 0;
 
     const doPost = useCallback(async ({ viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError }: IUsePostPlayground) => {
         const params = { viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError };
-        setLoading(true);
+        setActiveJobs(prev => prev + 1);
         try {
-            await inferLocalComfy(params)
+            await inferLocalComfy(params);
+            // onSuccess → onSetResults → setLoading(false) handles decrement
         } catch (error) {
             onError(error);
+            // Decrement on error since onSetResults won't be called
+            setActiveJobs(prev => Math.max(0, prev - 1));
         }
-        setLoading(false);
     }, []);
 
-    return { doPost, loading, setLoading };
+    // setLoading mapped to counter for compatibility with shared PlaygroundPageContent
+    const setLoading = useCallback((val: boolean) => {
+        if (val) {
+            setActiveJobs(prev => prev + 1);
+        } else {
+            setActiveJobs(prev => Math.max(0, prev - 1));
+        }
+    }, []);
+
+    return { doPost, loading, setLoading, activeJobs };
 }
 
 function concatUint8Arrays(a: Uint8Array, b: Uint8Array): Uint8Array {

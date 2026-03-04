@@ -81,23 +81,31 @@ export class ComfyUIAPIService {
                 console.log("WebSocket connection opened");
             };
 
-            this.ws.onmessage = (event) => {
-                // console.log("WebSocket message received:", event.data);
-                this.comfyEventDataHandler(event.data);
-            };
+        this.ws.onmessage = async (event) => {
+            await this.comfyEventDataHandler(event.data);
+        };
         } catch (error) {
             console.error(error);
             throw new Error("WebSocket connection error");
         }
     }
 
-    private comfyEventDataHandler(eventData: string) {
+    private async comfyEventDataHandler(eventData: string | Blob) {
         let event: IComfyUIWSEventData | undefined;
+        let textData: string;
+    
         try {
-            event = JSON.parse(eventData) as IComfyUIWSEventData;
+            if (eventData instanceof Blob) {
+                // Comfy sometimes sends binary frames (preview images)
+                textData = await eventData.text();
+            } else {
+                textData = eventData;
+            }
+    
+            event = JSON.parse(textData) as IComfyUIWSEventData;
+    
         } catch (error) {
-            console.log("Error parsing event data:", eventData);
-            console.error(error);
+            console.log("Non-JSON WS message received:", eventData);
             return;
         }
 

@@ -21,6 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Info, Check, SquarePen, MoveUp, MoveDown, Brush, Undo2, Eye, EyeOff } from "lucide-react";
 import { Dropzone } from "@/components/ui/dropzone";
+import { MultiImageDropzone } from "@/components/ui/multi-image-dropzone";
 import { ChevronsUpDown } from "lucide-react"
 import {
     Collapsible,
@@ -114,6 +115,20 @@ export function ViewComfyForm(args: {
     const hasInitializedEndpoint = useRef(false);
     const { errors } = form.formState;
     const viewcomfyEndpointError = errors.viewcomfyEndpoint;
+
+    // Count active image input slots to determine if cross-group dropzone is active
+    const hasMultiImageDropzone = !editMode && (() => {
+        let imageCount = 0;
+        inputFieldArray.fields.forEach((group: any) => {
+            if (group.visibility === 'deleted' || (group.visibility !== 'active' && group.visibility !== undefined)) return;
+            (group.inputs ?? []).forEach((input: IInputField) => {
+                if (input.valueType === "image" && input.visibility !== 'deleted' && input.visibility !== 'hidden') {
+                    imageCount++;
+                }
+            });
+        });
+        return imageCount >= 2;
+    })();
 
     useEffect(() => {
         if (viewcomfyEndpointError && viewcomfyEndpointRef.current) {
@@ -307,10 +322,10 @@ export function ViewComfyForm(args: {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full w-full">
                     <div className="flex flex-row gap-x-2 flex-1 min-h-0">
-                        <div className='flex-col flex-1 items-start gap-4 flex mr-1 min-h-0 min-w-0'>
+                        <div className='flex-col flex-1 items-start gap-1 flex mr-1 min-h-0 min-w-0'>
                             <div id="inputs-form" className="flex flex-col w-full h-full">
                                 <ScrollArea className={"flex-1 px-[5px] pr-4"}>
-                                    <div className={cn("grid w-full items-start gap-4", !editMode && "pb-24")}>
+                                    <div className={cn("grid w-full items-start gap-1", !editMode && "pb-24")}>
                                         {editMode && (
                                             <div className="grid gap-2">
                                                 <FormField
@@ -453,7 +468,14 @@ export function ViewComfyForm(args: {
                                                 <p className="text-md text-muted-foreground whitespace-pre-wrap break-all">{form.getValues("description")}</p>
                                             </div>
                                         )}
-                                        <fieldset disabled={isLoading} className="grid gap-4 rounded-lg p-1">
+                                        {!editMode && (
+                                            <CrossGroupImageDropzone
+                                                form={form}
+                                                formFieldName="inputs"
+                                                inputFields={inputFieldArray.fields}
+                                            />
+                                        )}
+                                        <fieldset disabled={isLoading} className="grid gap-1 rounded-lg p-1">
                                             {editMode && (
                                                 <legend className="-ml-1 px-1 text-md font-medium">
                                                     Basic Inputs
@@ -556,7 +578,7 @@ export function ViewComfyForm(args: {
 
                                                     return (
                                                         <fieldset disabled={isLoading} key={field.id} className="grid gap-4">
-                                                            <NestedInputField form={form} nestedIndex={index} editMode={editMode} formFieldName="inputs" setShowEditDialog={setShowEditDialogInput} handleRemove={(inputIndex) => handleRemoveInput({ groupIndex: index, inputIndex })} handleToggleVisibility={(inputIndex) => handleToggleVisibilityInput({ groupIndex: index, inputIndex })} />
+                                                            <NestedInputField form={form} nestedIndex={index} editMode={editMode} formFieldName="inputs" setShowEditDialog={setShowEditDialogInput} handleRemove={(inputIndex) => handleRemoveInput({ groupIndex: index, inputIndex })} handleToggleVisibility={(inputIndex) => handleToggleVisibilityInput({ groupIndex: index, inputIndex })} hideEmptyImageDropzone={hasMultiImageDropzone} />
                                                         </fieldset>
                                                     )
                                                 }
@@ -666,7 +688,7 @@ function PreviewImagesInput({ form }: { form: UseFormReturn<IViewComfyBase> }) {
     };
 
     return (
-        <div className="grid gap-4 p-1">
+        <div className="grid gap-1 p-1">
             {[0, 1, 2].map((index) => (
                 <FormField
                     key={index}
@@ -874,6 +896,102 @@ function AdvancedInputSection(args: {
 }
 
 
+// Scans all groups in a fieldset and finds every image input across them.
+// Renders a single MultiImageDropzone that distributes files one-per-slot.
+function CrossGroupImageDropzone({ form, formFieldName, inputFields }: {
+    form: UseFormReturn<IViewComfyBase, any, IViewComfyBase>;
+    formFieldName: string;
+    inputFields: any[];
+}) {
+    // Build a flat list of { groupIndex, inputIndex } for every image field
+    const imageSlots: { groupIndex: number; inputIndex: number }[] = [];
+    inputFields.forEach((group, groupIndex) => {
+        // Skip deleted or hidden groups in non-edit mode
+        if (group.visibility === 'deleted') return;
+        const inputs: IInputForm[] = group.inputs ?? [];
+        inputs.forEach((input, inputIndex) => {
+            if (input.valueType === "image" && input.visibility !== 'deleted' && input.visibility !== 'hidden') {
+                imageSlots.push({ groupIndex, inputIndex });
+            }
+        });
+    });
+
+    // Watch all inputs so thumbnails stay in sync when individual fields change
+    // @ts-ignore
+    const watchedFieldName = form.watch(formFieldName) as any[];
+
+    // Build parallel arrays: one with File|null per slot, one with only the Files for display
+    const allSlotValues: (File | null)[] = imageSlots.map(({ groupIndex, inputIndex }) => {
+        const val = watchedFieldName?.[groupIndex]?.inputs?.[inputIndex]?.value;
+        return val instanceof File ? val : null;
+    });
+    const currentFiles: File[] = allSlotValues.filter(Boolean) as File[];
+    // Map from filtered-file index back to slot index
+    const fileToSlotIndex: number[] = [];
+    allSlotValues.forEach((val, slotIdx) => {
+        if (val instanceof File) fileToSlotIndex.push(slotIdx);
+    });
+
+    if (imageSlots.length < 2) return null;
+
+    const handleChange = (files: File[]) => {
+        const prevLength = currentFiles.length;
+        const newLength = files.length;
+
+        if (newLength < prevLength) {
+            // Removal: find which thumbnail index was removed, clear only that slot
+            const removedIndices: number[] = [];
+            let fi = 0;
+            for (let pi = 0; pi < prevLength; pi++) {
+                if (fi < newLength && currentFiles[pi] === files[fi]) {
+                    fi++;
+                } else {
+                    removedIndices.push(pi);
+                }
+            }
+            // Clear the form slots for removed files
+            removedIndices.forEach((removedFileIdx) => {
+                const slotIdx = fileToSlotIndex[removedFileIdx];
+                if (slotIdx !== undefined) {
+                    const { groupIndex, inputIndex } = imageSlots[slotIdx];
+                    form.setValue(
+                        // @ts-ignore
+                        `${formFieldName}[${groupIndex}].inputs[${inputIndex}].value`,
+                        null,
+                        { shouldDirty: true }
+                    );
+                }
+            });
+        } else {
+            // Addition: find empty slots and fill them with new files
+            const newFiles = files.slice(prevLength);
+            let newIdx = 0;
+            for (let slotIdx = 0; slotIdx < imageSlots.length && newIdx < newFiles.length; slotIdx++) {
+                if (!allSlotValues[slotIdx]) {
+                    const { groupIndex, inputIndex } = imageSlots[slotIdx];
+                    form.setValue(
+                        // @ts-ignore
+                        `${formFieldName}[${groupIndex}].inputs[${inputIndex}].value`,
+                        newFiles[newIdx],
+                        { shouldDirty: true }
+                    );
+                    newIdx++;
+                }
+            }
+        }
+    };
+
+    return (
+        <MultiImageDropzone
+            value={currentFiles}
+            onChange={handleChange}
+            maxFiles={imageSlots.length}
+            inputPlaceholder={`Drop up to ${imageSlots.length} images at once`}
+            className="mb-1"
+        />
+    );
+}
+
 function NestedInputField(args: {
     form: UseFormReturn<IViewComfyBase, any, IViewComfyBase>,
     nestedIndex: number,
@@ -882,8 +1000,9 @@ function NestedInputField(args: {
     setShowEditDialog: (value: IEditFieldDialog | undefined) => void,
     handleRemove: (inputIndex: number) => void,
     handleToggleVisibility: (inputIndex: number) => void,
+    hideEmptyImageDropzone?: boolean,
 }) {
-    const { form, nestedIndex, editMode, formFieldName, setShowEditDialog, handleRemove, handleToggleVisibility } = args;
+    const { form, nestedIndex, editMode, formFieldName, setShowEditDialog, handleRemove, handleToggleVisibility, hideEmptyImageDropzone } = args;
     const nestedFieldArray = useFieldArray({
         control: form.control,
 
@@ -949,7 +1068,7 @@ function NestedInputField(args: {
                                 : undefined,
                         }}
                         render={({ field }) => (
-                            <InputFieldToUI key={input.id} input={input} field={field} editMode={editMode} remove={handleRemove} toggleVisibility={handleToggleVisibility} index={k} setShowEditDialog={openEditDialogWithContext} />
+                            <InputFieldToUI key={input.id} input={input} field={field} editMode={editMode} remove={handleRemove} toggleVisibility={handleToggleVisibility} index={k} setShowEditDialog={openEditDialogWithContext} hideEmptyImageDropzone={hideEmptyImageDropzone} />
                         )}
                     />
                 )
@@ -967,8 +1086,9 @@ function InputFieldToUI(args: {
     toggleVisibility?: (index: number) => void,
     index: number,
     setShowEditDialog: (value: IEditFieldDialog | undefined) => void,
+    hideEmptyImageDropzone?: boolean,
 }) {
-    const { input, field, editMode, remove, toggleVisibility, index, setShowEditDialog } = args;
+    const { input, field, editMode, remove, toggleVisibility, index, setShowEditDialog, hideEmptyImageDropzone } = args;
 
     if (input.valueType === "long-text") {
         return (
@@ -984,7 +1104,7 @@ function InputFieldToUI(args: {
 
     if (input.valueType === "video" || input.valueType === "image" || input.valueType === "audio") {
         return (
-            <FormMediaInput input={input} field={field} editMode={editMode} remove={remove} toggleVisibility={toggleVisibility} index={index} setShowEditDialog={setShowEditDialog} />
+            <FormMediaInput input={input} field={field} editMode={editMode} remove={remove} toggleVisibility={toggleVisibility} index={index} setShowEditDialog={setShowEditDialog} hideEmptyImageDropzone={hideEmptyImageDropzone} />
         )
     }
 
@@ -1105,8 +1225,8 @@ function FormSeedInput(args: { input: IInputForm, field: any, editMode?: boolean
 }
 
 
-function FormMediaInput(args: { input: IInputForm, field: any, editMode?: boolean, remove?: (index: number) => void, toggleVisibility?: (index: number) => void, index: number, setShowEditDialog: (value: IEditFieldDialog | undefined) => void }) {
-    const { input, field, editMode, remove, toggleVisibility, index, setShowEditDialog } = args;
+function FormMediaInput(args: { input: IInputForm, field: any, editMode?: boolean, remove?: (index: number) => void, toggleVisibility?: (index: number) => void, index: number, setShowEditDialog: (value: IEditFieldDialog | undefined) => void, hideEmptyImageDropzone?: boolean }) {
+    const { input, field, editMode, remove, toggleVisibility, index, setShowEditDialog, hideEmptyImageDropzone } = args;
     const [media, setMedia] = useState({
         src: "",
         name: "",
@@ -1141,6 +1261,12 @@ function FormMediaInput(args: { input: IInputForm, field: any, editMode?: boolea
                 }
             };
             reader.readAsDataURL(field.value);
+        } else if (!field.value) {
+            // Clear preview when value is removed (e.g. from cross-group dropzone)
+            setMedia({
+                src: "",
+                name: ""
+            });
         }
     }, [field.value]);
 
@@ -1150,6 +1276,11 @@ function FormMediaInput(args: { input: IInputForm, field: any, editMode?: boolea
             src: "",
             name: ""
         });
+    }
+
+    // Hide individual image input when the cross-group dropzone handles it
+    if (hideEmptyImageDropzone && input.valueType === "image") {
+        return null;
     }
 
     return (

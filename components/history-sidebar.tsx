@@ -1,6 +1,8 @@
 "use client"
+
+import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { History, Filter, ChevronRight, Copy, FileType, File, CircleX } from "lucide-react"
+import { History, Filter, ChevronRight, Copy, FileType, File, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
@@ -10,190 +12,117 @@ import {
 } from "@/components/ui/collapsible"
 import BlurFade from "@/components/ui/blur-fade"
 import { cn, fromSecondsToTime } from "@/lib/utils"
-import { createMediaDragHandler } from "@/lib/drag-utils"
-import WorkflowSwitcher from "@/components/workflow-switchter";
-import { type IViewComfy, useViewComfy } from "@/app/providers/view-comfy-provider";
 import DatePickerWithRange from "./ui/date-picker-with-range"
 import { DateRange } from "react-day-picker"
 import { subDays, format } from "date-fns"
-import { useWorkflowHistory } from "@/hooks/use-data"
-import { useApiAppHistory } from "@/hooks/use-api-app-history"
-import { Dialog, DialogContent, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
+import { useLocalHistory, refreshAllHistory } from "@/hooks/use-local-history"
+import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Play } from "lucide-react"
 import { ChevronLeft } from "lucide-react"
-import { IWorkflowHistoryModel, IWorkflowHistoryFileModel } from "@/app/interfaces/workflow-history"
-import { toast } from "sonner";
+import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Skeleton } from "./ui/skeleton"
-import { ErrorAlertDialog } from "./ui/error-alert-dialog"
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import type { AppType } from "@/app/interfaces/unified-app"
-import type { AppOutputDTO, AppExecutionOutputDTO, AppExecutionResultOutputDTO } from "@/src/generated"
-
-type PageSize = 5 | 10 | 20;
-
-// Unified file type that works for both ViewComfy and API App outputs
-type UnifiedHistoryFile = IWorkflowHistoryFileModel | AppExecutionResultOutputDTO;
+import { useUser } from "@/app/providers/user-provider"
+import type { IGenerationRecord } from "@/app/interfaces/generation-history"
 
 interface HistorySidebarProps {
     open: boolean
     setOpen: (open: boolean) => void
     className?: string
-    appType?: AppType | null
-    apiApp?: AppOutputDTO | null
 }
 
-export function HistorySidebar({ open, setOpen, className, appType, apiApp }: HistorySidebarProps) {
-    const userManagement = process.env.NEXT_PUBLIC_USER_MANAGEMENT === "true";
-
-    // If user management is disabled, don't render the history sidebar
-    if (!userManagement) {
+export function HistorySidebar({ open, setOpen, className }: HistorySidebarProps) {
+    if (!open) {
         return null;
     }
 
-    return <HistorySidebarContent open={open} setOpen={setOpen} className={className} appType={appType} apiApp={apiApp} />;
+    return <HistorySidebarContent open={open} setOpen={setOpen} className={className} />;
 }
 
-export function HistorySidebarContent({ open, setOpen, className, appType, apiApp }: HistorySidebarProps) {
-    const [showFilters, setShowFilters] = useState(true);
-    const { viewComfyState } = useViewComfy();
-    const [currentViewComfySwitcher, setCurrentViewComfySwitcher] = useState<IViewComfy | null>(
-        viewComfyState.viewComfys[0] ?? null
-    );
-    const [successWorkflows, setSuccessWorkflows] = useState<IWorkflowHistoryModel[]>([]);
-    const [successApiExecutions, setSuccessApiExecutions] = useState<AppExecutionOutputDTO[]>([]);
-    const [failedApiExecutions, setFailedApiExecutions] = useState<AppExecutionOutputDTO[]>([]);
-    const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-    const [currentErrorMessage, setCurrentErrorMessage] = useState<string>("");
+export function HistorySidebarContent({ open, setOpen, className }: HistorySidebarProps) {
+    const [showFilters, setShowFilters] = useState(false);
+    const { username } = useUser();
     const today = new Date();
     const [date, setDate] = useState<DateRange | undefined>({
-        from: subDays(today, 1),
+        from: subDays(today, 7),
         to: today,
     });
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState<PageSize>(5);
 
-    const isViewComfyMode = appType === "viewcomfy" || !appType;
-    const isApiMode = appType === "api";
-
-    // ViewComfy history hook - only fetch when in ViewComfy mode
     const {
-        workflowHistory,
-        isLoading: isLoadingWorkflowHistory,
-        isError: isErrorWorkflowHistory,
-    } = useWorkflowHistory({
-        apiEndpoint: isViewComfyMode && currentViewComfySwitcher
-            ? (currentViewComfySwitcher.viewComfyJSON.viewcomfyEndpoint || "")
-            : "",
+        history,
+        isLoading,
+        isError,
+    } = useLocalHistory({
+        username,
         startDate: date?.from,
         endDate: date?.to,
-        page,
-        pageSize,
     });
-
-    // API App history hook - only fetch when in API mode
-    const {
-        executions: apiAppExecutions,
-        total: apiAppTotal,
-        isLoading: isLoadingApiHistory,
-        isError: isErrorApiHistory,
-    } = useApiAppHistory({
-        appId: isApiMode && apiApp ? apiApp.id : null,
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
-    });
-
-    // Determine loading/error states based on mode
-    const isLoading = isViewComfyMode ? isLoadingWorkflowHistory : isLoadingApiHistory;
-    const isError = isViewComfyMode ? isErrorWorkflowHistory : isErrorApiHistory;
-
-    // Reset page when filters change
-    useEffect(() => {
-        setPage(1);
-    }, [currentViewComfySwitcher, date, pageSize, appType, apiApp]);
-
-    const handlePreviousPage = () => {
-        setPage((prev) => Math.max(1, prev - 1));
-    };
-
-    const handleNextPage = () => {
-        setPage((prev) => prev + 1);
-    };
-
-    const handlePageSizeChange = (value: string) => {
-        setPageSize(Number(value) as PageSize);
-    };
-
-    // Determine pagination for ViewComfy mode
-    const hasNextPageViewComfy = successWorkflows.length === pageSize;
-
-    // Determine pagination for API mode (using total count)
-    const hasNextPageApi = isApiMode && apiAppTotal > page * pageSize;
-
-    const hasNextPage = isViewComfyMode ? hasNextPageViewComfy : hasNextPageApi;
-    const hasPreviousPage = page > 1;
-
-    // Process ViewComfy history
-    useEffect(() => {
-        if (!workflowHistory || !isViewComfyMode) {
-            if (!isViewComfyMode) setSuccessWorkflows([]);
-            return;
-        }
-        setSuccessWorkflows(workflowHistory.filter(w => w.status === "success"))
-    }, [workflowHistory, isViewComfyMode])
-
-    // Process API App history
-    useEffect(() => {
-        if (!apiAppExecutions || !isApiMode) {
-            if (!isApiMode) {
-                setSuccessApiExecutions([]);
-                setFailedApiExecutions([]);
-            }
-            return;
-        }
-        setSuccessApiExecutions(apiAppExecutions.filter(e => e.status === "completed"));
-        setFailedApiExecutions(apiAppExecutions.filter(e => e.status === "failed"));
-    }, [apiAppExecutions, isApiMode])
-
-    const handleShowError = (errorMessage: string | null | undefined) => {
-        setCurrentErrorMessage(errorMessage || "An unknown error occurred");
-        setErrorDialogOpen(true);
-    };
-
-    // Determine which items to display
-    const historyItems = isViewComfyMode ? successWorkflows : successApiExecutions;
-    const hasItems = isViewComfyMode
-        ? (historyItems && historyItems.length > 0)
-        : (successApiExecutions.length > 0 || failedApiExecutions.length > 0);
 
     if (!open) {
         return null;
     }
 
-    // For ViewComfy mode, we need a current view comfy
-    if (isViewComfyMode && !viewComfyState.currentViewComfy) {
-        return null;
+    const getTotalSize = (generation: IGenerationRecord) => {
+        if (!generation.outputs || generation.outputs.length === 0) {
+            return "0.00";
+        }
+        const sizeInBytes = generation.outputs.reduce((acc, output) => acc + output.size, 0);
+        const sizeInMB = sizeInBytes / (1024 * 1024);
+        return sizeInMB.toFixed(2);
     }
 
-    // For API mode, we need an apiApp
-    if (isApiMode && !apiApp) {
-        return null;
-    }
+    const copyPrompt = (promptDataStr: string) => {
+        let textToCopy = promptDataStr;
+        try {
+            const promptData = JSON.parse(promptDataStr);
+            textToCopy = formatPromptForCopy(promptData);
+        } catch {
+            // Use raw string if parsing fails
+        }
 
-    const copyPrompt = (prompt: string) => {
-        navigator.clipboard.writeText(prompt);
-        toast.success(
-            "Prompt copied to clipboard",
-            {
-                duration: 2000,
-            })
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                toast.success("Prompt copied to clipboard", { duration: 2000 });
+            }).catch(() => {
+                fallbackCopy(textToCopy);
+            });
+        } else {
+            fallbackCopy(textToCopy);
+        }
+    };
+
+    const handleDelete = async (generationId: number) => {
+        if (!username) return;
+        try {
+            const res = await fetch(`/api/history?id=${generationId}&username=${encodeURIComponent(username)}`, {
+                method: "DELETE",
+            });
+            if (res.ok) {
+                toast.success("Deleted from history", { duration: 2000 });
+                refreshAllHistory();
+            } else {
+                toast.error("Failed to delete", { duration: 2000 });
+            }
+        } catch {
+            toast.error("Failed to delete", { duration: 2000 });
+        }
+    };
+
+    const fallbackCopy = (text: string) => {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            toast.success("Prompt copied to clipboard", { duration: 2000 });
+        } catch {
+            toast.error("Failed to copy prompt", { duration: 2000 });
+        }
+        document.body.removeChild(textarea);
     };
 
     return (
@@ -224,48 +153,22 @@ export function HistorySidebarContent({ open, setOpen, className, appType, apiAp
                         </Button>
                     </div>
                 </div>
+                {username && (
+                    <div className="px-4 pb-2 text-xs text-muted-foreground">
+                        Showing history for: <span className="font-medium text-foreground">{username}</span>
+                    </div>
+                )}
             </div>
 
             <div className="flex-1 flex flex-col overflow-y-hidden">
                 <Collapsible open={showFilters} onOpenChange={setShowFilters}>
                     <CollapsibleContent className="space-y-4 p-4 border-b">
                         <div className="space-y-4">
-                            {/* Show WorkflowSwitcher only for ViewComfy apps */}
-                            {isViewComfyMode && currentViewComfySwitcher && (
-                                <div className="space-y-2">
-                                    <WorkflowSwitcher viewComfys={viewComfyState.viewComfys} currentViewComfy={currentViewComfySwitcher} onSelectChange={setCurrentViewComfySwitcher} />
-                                </div>
-                            )}
-                            {/* Show app name for API apps */}
-                            {isApiMode && apiApp && (
-                                <div className="space-y-2">
-                                    <span className="text-sm font-medium">{apiApp.name}</span>
-                                </div>
-                            )}
-                            {/* Date picker only for ViewComfy apps (API doesn't support date filtering) */}
-                            {isViewComfyMode && (
-                                <DatePickerWithRange
-                                    dateRange={date}
-                                    setDate={setDate}
-                                    disabled={false}
-                                />
-                            )}
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Images per page</span>
-                                <Select
-                                    value={pageSize.toString()}
-                                    onValueChange={handlePageSizeChange}
-                                >
-                                    <SelectTrigger className="w-[80px]">
-                                        <SelectValue placeholder="10" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="5">5</SelectItem>
-                                        <SelectItem value="10">10</SelectItem>
-                                        <SelectItem value="20">20</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            <DatePickerWithRange
+                                dateRange={date}
+                                setDate={setDate}
+                                disabled={false}
+                            />
                         </div>
                     </CollapsibleContent>
                 </Collapsible>
@@ -285,39 +188,15 @@ export function HistorySidebarContent({ open, setOpen, className, appType, apiAp
                                         <Skeleton className="h-4 w-[250px]" />
                                     </div>
                                 </div>
-                                <div className="flex flex-col space-y-3">
-                                    <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-[200px]" />
-                                        <Skeleton className="h-4 w-[250px]" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
-                    ) : !hasItems && page === 1 ? (
+                    ) : history && history.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-8 text-center">
                             <History className="h-12 w-12 text-muted-foreground mb-4" />
                             <h3 className="text-lg font-medium">No history found</h3>
                             <p className="text-sm text-muted-foreground">
                                 Your generation history will appear here
                             </p>
-                        </div>
-                    ) : !hasItems && page > 1 ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <History className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-medium">No more results</h3>
-                            <p className="text-sm text-muted-foreground">
-                                You&apos;ve reached the end of the history
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-4"
-                                onClick={handlePreviousPage}
-                            >
-                                <ChevronLeft className="h-4 w-4 mr-1" />
-                                Go back
-                            </Button>
                         </div>
                     ) : isError ? (
                         <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -329,210 +208,140 @@ export function HistorySidebarContent({ open, setOpen, className, appType, apiAp
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center space-y-4 mt-2">
-                            {/* Render ViewComfy history */}
-                            {isViewComfyMode && successWorkflows?.map(
-                                (workflowHistory: IWorkflowHistoryModel) => (
-                                    <div key={workflowHistory.id} >
+                            {history?.map(
+                                (generation: IGenerationRecord) => (
+                                    <div key={generation.id}>
                                         <div className="flex flex-col items-center justify-center">
-                                            <BlurFade key={workflowHistory.id + "blur-fade"} delay={0.23} inView>
-                                                {workflowHistory.outputs && <BlobPreview key={workflowHistory.id + "blob-preview"}
-                                                    outputs={workflowHistory.outputs}
-                                                />}
+                                            <BlurFade key={generation.id + "blur-fade"} delay={0.23} inView>
+                                                <OutputPreview
+                                                    key={generation.id + "output-preview"}
+                                                    outputs={generation.outputs}
+                                                />
                                             </BlurFade>
                                         </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {/* Total size: {getTotalSize(workflowHistory.outputs)} MB
-                                            - */}
-                                            Copy prompt <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-4 w-4"
-                                                onClick={() =>
-                                                    copyPrompt(
-                                                        JSON.stringify(
-                                                            workflowHistory.prompt,
-                                                        ),
-                                                    )
-                                                }
-                                            >
-                                                <TooltipProvider
-                                                    delayDuration={100}
-                                                >
+                                        <div className="text-sm text-muted-foreground mt-1 flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                Total size: {getTotalSize(generation)} MB
+                                                {" - "}
+                                                Prompt: <TooltipProvider delayDuration={100}>
                                                     <Tooltip>
-                                                        <TooltipTrigger className="flex justify-self-center gap-1">
-                                                            <Copy className="h-4 w-4" />
-                                                        </TooltipTrigger>
-
-                                                        <TooltipContent className="text-center">
-                                                            <p>
-                                                                Copy the
-                                                                prompt to the
-                                                                clipboard
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </Button>
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            execution time: {fromSecondsToTime(
-                                                workflowHistory.executionTimeSeconds,
-                                            )} - <span className="text-sm text-muted-foreground">
-                                                {" "}{format(
-                                                    workflowHistory.createdAt.toLocaleString(),
-                                                    "dd/M/yyyy HH:mm:ss",
-                                                )}
-                                            </span>
-                                        </div>
-
-                                    </div>
-                                ))}
-
-                            {/* Render API App history */}
-                            {isApiMode && successApiExecutions?.map(
-                                (execution: AppExecutionOutputDTO) => (
-                                    <div key={execution.id} >
-                                        <div className="flex flex-col items-center justify-center">
-                                            <BlurFade key={execution.id + "blur-fade"} delay={0.23} inView>
-                                                {execution.results && execution.results.length > 0 && (
-                                                    <BlobPreview
-                                                        key={execution.id + "blob-preview"}
-                                                        outputs={execution.results}
-                                                    />
-                                                )}
-                                            </BlurFade>
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {/* Total size: {getTotalSize(execution.results)} MB
-                                            - */}
-                                            Copy input data <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-4 w-4"
-                                                onClick={() =>
-                                                    copyPrompt(
-                                                        JSON.stringify(
-                                                            execution.inputData,
-                                                        ),
-                                                    )
-                                                }
-                                            >
-                                                <TooltipProvider
-                                                    delayDuration={100}
-                                                >
-                                                    <Tooltip>
-                                                        <TooltipTrigger className="flex justify-self-center gap-1">
-                                                            <Copy className="h-4 w-4" />
-                                                        </TooltipTrigger>
-
-                                                        <TooltipContent className="text-center">
-                                                            <p>
-                                                                Copy the
-                                                                input to the
-                                                                clipboard
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </Button>
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            <span className="text-sm text-muted-foreground">
-                                                {format(
-                                                    new Date(execution.createdAt),
-                                                    "dd/M/yyyy HH:mm:ss",
-                                                )}
-                                            </span>
-                                        </div>
-
-                                    </div>
-                                ))}
-
-                            {/* Render Failed API App executions */}
-                            {isApiMode && failedApiExecutions?.map(
-                                (execution: AppExecutionOutputDTO) => (
-                                    <div key={execution.id}>
-                                        <div className="flex flex-col items-center justify-center">
-                                            <BlurFade key={execution.id + "blur-fade"} delay={0.23} inView>
-                                                <div className="relative inline-block">
-                                                    <div className="w-32 h-32 rounded-md bg-muted flex items-center justify-center border">
-                                                        <div className="flex flex-col items-center gap-2">
-                                                            <CircleX className="h-8 w-8 text-destructive" />
+                                                        <TooltipTrigger asChild>
                                                             <Button
                                                                 variant="outline"
-                                                                size="sm"
-                                                                onClick={() => handleShowError(execution.errorMessage)}
+                                                                size="icon"
+                                                                className="h-5 w-5"
+                                                                onClick={() =>
+                                                                    copyPrompt(generation.prompt_data)
+                                                                }
                                                             >
-                                                                Show Error
+                                                                <Copy className="h-3 w-3" />
                                                             </Button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </BlurFade>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="text-center">
+                                                            <p>Copy prompt to clipboard</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                            <TooltipProvider delayDuration={100}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 text-muted-foreground/50 hover:text-destructive"
+                                                            onClick={() => handleDelete(generation.id)}
+                                                        >
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="text-center">
+                                                        <p>Remove from history</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </div>
-                                        <div className="text-sm text-muted-foreground mt-2 text-center">
+                                        {/* Show prompt preview */}
+                                        <PromptPreview promptData={generation.prompt_data} />
+                                        <div className="text-sm text-muted-foreground">
+                                            execution time: {fromSecondsToTime(generation.execution_time_seconds)}
+                                            {" - "}
                                             <span className="text-sm text-muted-foreground">
-                                                {format(
-                                                    new Date(execution.createdAt),
-                                                    "dd/M/yyyy HH:mm:ss",
-                                                )}
+                                                {format(new Date(generation.created_at), "dd/M/yyyy HH:mm:ss")}
                                             </span>
                                         </div>
                                     </div>
-                                ))}
-
-                            {/* Pagination Controls */}
-                            <div className="flex items-center justify-center gap-4 pt-4 pb-2 w-full">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handlePreviousPage}
-                                    disabled={!hasPreviousPage}
-                                    aria-label="Previous page"
-                                >
-                                    <ChevronLeft className="h-4 w-4 mr-1" />
-                                    Previous
-                                </Button>
-                                <span className="text-sm text-muted-foreground">
-                                    Page {page}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleNextPage}
-                                    disabled={!hasNextPage}
-                                    aria-label="Next page"
-                                >
-                                    Next
-                                    <ChevronRight className="h-4 w-4 ml-1" />
-                                </Button>
-                            </div>
+                                )
+                            )}
                         </div>
                     )}
                 </ScrollArea>
             </div>
-            <ErrorAlertDialog
-                open={errorDialogOpen}
-                errorTitle="Execution Failed"
-                errorDescription={currentErrorMessage}
-                onClose={() => setErrorDialogOpen(false)}
-            />
         </div>
     )
 }
 
-function BlobPreview({
-    outputs,
-}: {
-    outputs: UnifiedHistoryFile[] | null;
-}) {
+// Component to show just the prompt text
+function PromptPreview({ promptData }: { promptData: string }) {
+    const promptText = extractPromptText(promptData);
+
+    if (!promptText) {
+        return null;
+    }
+
+    const truncated = promptText.length > 120
+        ? promptText.substring(0, 120) + "..."
+        : promptText;
+
+    return (
+        <div className="mt-1 mb-1">
+            <p className="text-xs text-muted-foreground italic">{truncated}</p>
+        </div>
+    );
+}
+
+// Extract just the prompt text from stored prompt data
+function extractPromptText(promptDataStr: string): string | null {
+    try {
+        const parsed = JSON.parse(promptDataStr);
+        // Look for keys that contain "text" but not "text_negative" or other variants
+        const textKeys = Object.keys(parsed).filter(k => {
+            const cleaned = k.replace(/^\d+-inputs-/, "").replace(/^\d+-/, "");
+            return cleaned === "text" || cleaned === "prompt";
+        });
+        if (textKeys.length > 0) {
+            const value = parsed[textKeys[0]];
+            return typeof value === "string" ? value : null;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+function formatPromptForCopy(promptData: Record<string, unknown>): string {
+    // Only copy the prompt text, not all parameters
+    const textKeys = Object.keys(promptData).filter(k => {
+        const cleaned = k.replace(/^\d+-inputs-/, "").replace(/^\d+-/, "");
+        return cleaned === "text" || cleaned === "prompt";
+    });
+    if (textKeys.length > 0) {
+        const value = promptData[textKeys[0]];
+        if (typeof value === "string") return value;
+    }
+    // Fallback: return raw JSON if no text field found
+    return JSON.stringify(promptData, null, 2);
+}
+
+type OutputRecord = IGenerationRecord["outputs"][number];
+
+function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [blobIndex, setBlobIndex] = useState(0);
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const [containerWidth, setContainerWidth] = useState<number>(0);
     const [containerHeight, setContainerHeight] = useState<number>(0);
     const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
     const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
-    const backgroundColor = "black";
     const scaleUp = false;
     const zoomFactor = 8;
 
@@ -549,18 +358,14 @@ function BlobPreview({
             containerHeight / imageNaturalHeight,
         );
         return scaleUp ? scale : Math.max(scale, 1);
-    }, [
-        scaleUp,
-        containerWidth,
-        containerHeight,
-        imageNaturalWidth,
-        imageNaturalHeight,
-    ]);
+    }, [scaleUp, containerWidth, containerHeight, imageNaturalWidth, imageNaturalHeight]);
 
-    const isImageByMimeType = (file: UnifiedHistoryFile) => {
-        return file.contentType.startsWith(
-            "image/",
-        ) && file.contentType !== "image/vnd.adobe.photoshop"
+    const getImageUrl = (output: OutputRecord) => {
+        return `/api/history/image/${output.filepath}`;
+    };
+
+    const isImageByMimeType = (output: OutputRecord) => {
+        return output.content_type.startsWith("image/") && output.content_type !== "image/vnd.adobe.photoshop";
     };
 
     const handleResize = useCallback(() => {
@@ -588,28 +393,20 @@ function BlobPreview({
     };
 
     useEffect(() => {
-        if (!outputs || !outputs[blobIndex]) {
+        if (!outputs || outputs.length === 0 || !isImageByMimeType(outputs[blobIndex])) {
             return;
         }
-
-        if (!isImageByMimeType(outputs[blobIndex])) {
-            return;
-        }
-
         const image = new Image();
         image.onload = () => handleImageOnLoad(image);
-        image.onerror = () => {
-            console.error('Failed to load image:', outputs[blobIndex].filepath);
-        };
-        image.src = outputs[blobIndex].filepath;
+        image.src = getImageUrl(outputs[blobIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blobIndex, outputs]);
-
 
     if (!outputs || outputs.length === 0) {
         return null;
     }
 
-    const previewBlob = outputs[0];
+    const previewOutput = outputs[0];
 
     const goToPrevious = () => {
         setBlobIndex(prev => (prev > 0 ? prev - 1 : outputs.length - 1));
@@ -621,73 +418,39 @@ function BlobPreview({
 
     return (
         <div className="relative inline-block">
-            <Dialog
-                onOpenChange={() => {
-                    setBlobIndex(0);
-                }}
-            >
+            <Dialog onOpenChange={() => setBlobIndex(0)}>
                 <DialogTrigger asChild>
-                    <div key={previewBlob.id + "blob-preview-trigger"}>
-                        {previewBlob.contentType.startsWith("image/") && previewBlob.contentType !== "image/vnd.adobe.photoshop" && (
+                    <div key={previewOutput.id + "preview-trigger"}>
+                        {isImageByMimeType(previewOutput) && (
                             <img
-                                src={previewBlob.filepath}
-                                alt={"Output image"}
+                                src={getImageUrl(previewOutput)}
+                                alt="Output image"
                                 width={140}
                                 height={140}
                                 className="rounded-md transition-all hover:scale-105 hover:cursor-pointer"
-                                draggable="true"
-                                onDragStart={createMediaDragHandler({
-                                    url: previewBlob.filepath,
-                                    filename: previewBlob.filename,
-                                    contentType: previewBlob.contentType
-                                })}
                             />
                         )}
-                        {previewBlob.contentType.startsWith("video/") && (
-                            <div
-                                draggable="true"
-                                onDragStart={createMediaDragHandler({
-                                    url: previewBlob.filepath,
-                                    filename: previewBlob.filename,
-                                    contentType: previewBlob.contentType
-                                })}
+                        {previewOutput.content_type.startsWith("video/") && (
+                            <video
+                                key={previewOutput.id}
+                                className="object-contain rounded-md hover:cursor-pointer transition-all hover:scale-105"
+                                width={100}
+                                height={100}
                             >
-                                <video
-                                    key={previewBlob.id}
-                                    className="object-contain rounded-md hover:cursor-pointer transition-all hover:scale-105"
-                                    width={100}
-                                    height={100}
-                                >
-                                    <track
-                                        default
-                                        kind="captions"
-                                        srcLang="en"
-                                        src="SUBTITLE_PATH"
-                                    />
-                                    <source src={previewBlob.filepath} />
-                                </video>
-                            </div>
+                                <source src={getImageUrl(previewOutput)} />
+                            </video>
                         )}
-                        {previewBlob.contentType.startsWith("audio/") && (
-                            <div
-                                draggable="true"
-                                onDragStart={createMediaDragHandler({
-                                    url: previewBlob.filepath,
-                                    filename: previewBlob.filename,
-                                    contentType: previewBlob.contentType
-                                })}
-                            >
-                                <Button variant="outline">
-                                    <Play className="h-4 w-4" />
-                                </Button>
-                            </div>
+                        {previewOutput.content_type.startsWith("audio/") && (
+                            <Button variant="outline">
+                                <Play className="h-4 w-4" />
+                            </Button>
                         )}
-                        {(previewBlob.contentType === "image/vnd.adobe.photoshop") && (
+                        {previewOutput.content_type === "image/vnd.adobe.photoshop" && (
                             <Button variant="outline">
                                 <File className="h-10 w-10" />
                             </Button>
                         )}
-                        {(previewBlob.contentType.startsWith("text/")) && (
+                        {previewOutput.content_type.startsWith("text/") && (
                             <Button variant="outline">
                                 <FileType className="h-10 w-10" />
                             </Button>
@@ -695,18 +458,17 @@ function BlobPreview({
                     </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-fit max-h-[90vh] border-0 p-0 bg-transparent [&>button]:bg-background [&>button]:border [&>button]:border-border [&>button]:rounded-full [&>button]:p-1 [&>button]:shadow-md">
+                    <DialogTitle className="sr-only">Image preview</DialogTitle>
                     <div className="relative">
                         {isImageByMimeType(outputs[blobIndex]) && (
                             <div
                                 style={{
                                     width: "100%",
                                     height: "100%",
-                                    backgroundColor,
+                                    backgroundColor: "black",
                                     cursor: "zoom-in"
                                 }}
-                                ref={(el: HTMLDivElement | null) => {
-                                    setContainer(el);
-                                }}
+                                ref={(el: HTMLDivElement | null) => setContainer(el)}
                             >
                                 <TransformWrapper
                                     key={`${containerWidth}x${containerHeight}`}
@@ -716,56 +478,40 @@ function BlobPreview({
                                     centerOnInit
                                 >
                                     <TransformComponent
-                                        wrapperStyle={{
-                                            width: "100%",
-                                            height: "100%",
-                                        }}
+                                        wrapperStyle={{ width: "100%", height: "100%" }}
                                     >
                                         <img
                                             key={outputs[blobIndex].id}
-                                            src={outputs[blobIndex].filepath}
-                                            alt={`${outputs[blobIndex].filename}`}
+                                            src={getImageUrl(outputs[blobIndex])}
+                                            alt={outputs[blobIndex].filename}
                                             className="max-h-[85vh] w-auto object-contain rounded-md"
                                         />
                                     </TransformComponent>
                                 </TransformWrapper>
                             </div>
                         )}
-                        {outputs[blobIndex].contentType.startsWith(
-                            "video/",
-                        ) && (
-                                <video
-                                    key={outputs[blobIndex].id}
-                                    className="max-h-[85vh] w-auto object-contain rounded-md"
-                                    controls
-                                >
-                                    <track
-                                        default
-                                        kind="captions"
-                                        srcLang="en"
-                                        src="SUBTITLE_PATH"
-                                    />
-                                    <source src={outputs[blobIndex].filepath} />
-                                </video>
-                            )}
-                        {outputs[blobIndex].contentType.startsWith(
-                            "audio/",
-                        ) && (
-                                <div className="m-20">
-                                    <audio
-                                        key={outputs[blobIndex].id}
-                                        controls
-                                    >
-                                        <source src={outputs[blobIndex].filepath} />
-                                    </audio>
-                                </div>
-                            )}
-                        {(outputs[blobIndex].contentType === "image/vnd.adobe.photoshop") && (
+                        {outputs[blobIndex].content_type.startsWith("video/") && (
+                            <video
+                                key={outputs[blobIndex].id}
+                                className="max-h-[85vh] w-auto object-contain rounded-md"
+                                controls
+                            >
+                                <source src={getImageUrl(outputs[blobIndex])} />
+                            </video>
+                        )}
+                        {outputs[blobIndex].content_type.startsWith("audio/") && (
+                            <div className="m-20">
+                                <audio key={outputs[blobIndex].id} controls>
+                                    <source src={getImageUrl(outputs[blobIndex])} />
+                                </audio>
+                            </div>
+                        )}
+                        {outputs[blobIndex].content_type === "image/vnd.adobe.photoshop" && (
                             <div className="m-20">
                                 <File className="h-20 w-20" />
                             </div>
                         )}
-                        {(outputs[blobIndex].contentType.startsWith("text/")) && (
+                        {outputs[blobIndex].content_type.startsWith("text/") && (
                             <div className="m-20">
                                 <FileType className="h-20 w-20" />
                             </div>
@@ -796,14 +542,13 @@ function BlobPreview({
                             </div>
                         )}
                     </div>
-
                     <DialogFooter className="bg-transparent">
                         <Button
                             className="w-full"
                             onClick={() => {
                                 const link = document.createElement("a");
-                                link.href = outputs[blobIndex].filepath;
-                                link.download = `${outputs[blobIndex].filepath.split("/").pop()}`;
+                                link.href = getImageUrl(outputs[blobIndex]);
+                                link.download = outputs[blobIndex].filename;
                                 link.click();
                             }}
                         >

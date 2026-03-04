@@ -1,0 +1,3277 @@
+{
+  "file_type": "view_comfy",
+  "file_version": "1.0.0",
+  "version": "0.0.1",
+  "appTitle": "ViewComfy",
+  "appImg": "",
+  "workflows": [
+    {
+      "viewComfyJSON": {
+        "title": "nanobanana",
+        "description": "",
+        "viewcomfyEndpoint": "",
+        "previewImages": [],
+        "inputs": [
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "32",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "32-inputs-image",
+                "id": "4decbbdb-b4f4-49db-b9bf-ce372598df4c"
+              }
+            ],
+            "key": "32-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "33",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "33-inputs-image",
+                "id": "9f0f8dd5-37f9-444b-8f5d-d21f4388d471"
+              }
+            ],
+            "key": "33-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "35-inputs-image",
+                "id": "c87be81e-44c5-4619-b562-04b1c73bb121"
+              }
+            ],
+            "key": "35-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "37",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "37-inputs-image",
+                "id": "c769c680-baac-4270-98fb-333db1f906c9"
+              }
+            ],
+            "key": "37-loadImage_ViewComfy"
+          },
+          {
+            "title": "Text Multiline",
+            "inputs": [
+              {
+                "title": "Промпт",
+                "placeholder": "Text",
+                "value": "гладит кота на коленях",
+                "workflowPath": [
+                  "39",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "39-inputs-text"
+              }
+            ],
+            "key": "39-Text Multiline"
+          },
+          {
+            "title": "SDXL Prompt Styler",
+            "inputs": [
+              {
+                "title": "Text_negative",
+                "placeholder": "Text_negative",
+                "value": "",
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "text_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "38-inputs-text_negative",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Стиль ",
+                "placeholder": "Style",
+                "value": "base",
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style"
+                ],
+                "helpText": "",
+                "tooltip": "автоматически дополняет промт для достижения определенного эффекта в генерации",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style",
+                "options": [
+                  {
+                    "label": "стандартный",
+                    "value": "base"
+                  },
+                  {
+                    "label": "улучшенный",
+                    "value": "sai-enhance"
+                  },
+                  {
+                    "label": "цифровой арт",
+                    "value": "sai-digital art"
+                  },
+                  {
+                    "label": "кинематографичный",
+                    "value": "sai-cinematic"
+                  },
+                  {
+                    "label": "изометрия",
+                    "value": "sai-isometric"
+                  },
+                  {
+                    "label": "3d",
+                    "value": "sai-3d-model"
+                  }
+                ]
+              },
+              {
+                "title": "Log_prompt",
+                "placeholder": "Log_prompt",
+                "value": true,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "log_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-log_prompt",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_positive",
+                "placeholder": "Style_positive",
+                "value": true,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style_positive"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style_positive",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_negative",
+                "placeholder": "Style_negative",
+                "value": false,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style_negative",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "38-SDXLPromptStyler"
+          },
+          {
+            "title": "Google Gemini Image",
+            "inputs": [
+              {
+                "title": "Model",
+                "placeholder": "Model",
+                "value": "gemini-2.5-flash-image-preview",
+                "workflowPath": [
+                  "16",
+                  "inputs",
+                  "model"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "16-inputs-model",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Seed",
+                "placeholder": "Seed",
+                "value": 5e-324,
+                "workflowPath": [
+                  "16",
+                  "inputs",
+                  "seed"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "seed",
+                "validations": {
+                  "required": true
+                },
+                "key": "16-inputs-seed",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Соотношение сторон",
+                "placeholder": "Aspect_ratio",
+                "value": "auto",
+                "workflowPath": [
+                  "16",
+                  "inputs",
+                  "aspect_ratio"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": true
+                },
+                "key": "16-inputs-aspect_ratio",
+                "options": [
+                  {
+                    "label": "auto",
+                    "value": "auto"
+                  },
+                  {
+                    "label": "1:1",
+                    "value": "1:1"
+                  },
+                  {
+                    "label": "4:3",
+                    "value": "4:3"
+                  },
+                  {
+                    "label": "16:9",
+                    "value": "16:9"
+                  },
+                  {
+                    "label": "9:16",
+                    "value": "9:16"
+                  }
+                ]
+              },
+              {
+                "title": "Response_modalities",
+                "placeholder": "Response_modalities",
+                "value": "IMAGE",
+                "workflowPath": [
+                  "16",
+                  "inputs",
+                  "response_modalities"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "16-inputs-response_modalities",
+                "visibility": "hidden"
+              },
+              {
+                "title": "System_prompt",
+                "placeholder": "System_prompt",
+                "value": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.",
+                "workflowPath": [
+                  "16",
+                  "inputs",
+                  "system_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "16-inputs-system_prompt",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "16-GeminiImageNode"
+          }
+        ],
+        "advancedInputs": [
+          {
+            "title": "Batch Average Image",
+            "inputs": [
+              {
+                "title": "Operation",
+                "placeholder": "Operation",
+                "value": "median",
+                "workflowPath": [
+                  "12",
+                  "inputs",
+                  "operation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "12-inputs-operation",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "12-BatchAverageImage"
+          },
+          {
+            "title": "Сохранить изображение",
+            "inputs": [
+              {
+                "title": "Filename_prefix",
+                "placeholder": "Filename_prefix",
+                "value": "bananagen",
+                "workflowPath": [
+                  "22",
+                  "inputs",
+                  "filename_prefix"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "22-inputs-filename_prefix",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "22-SaveImage"
+          },
+          {
+            "title": "Show Any",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "isometric style гладит кота на коленях . vibrant, beautiful, crisp, detailed, ultra detailed, intricate",
+                "workflowPath": [
+                  "40",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "40-inputs-text",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "40-easy showAnything"
+          }
+        ],
+        "id": "02c23d4804cb18"
+      },
+      "workflowApiJSON": {
+        "5": {
+          "inputs": {
+            "images": [
+              "16",
+              0
+            ]
+          },
+          "class_type": "PreviewImage",
+          "_meta": {
+            "title": "Предварительный просмотр изображения"
+          }
+        },
+        "7": {
+          "inputs": {
+            "image1": [
+              "32",
+              0
+            ],
+            "image2": [
+              "33",
+              0
+            ],
+            "image3": [
+              "35",
+              0
+            ],
+            "image4": [
+              "37",
+              0
+            ]
+          },
+          "class_type": "ImpactMakeImageList",
+          "_meta": {
+            "title": "Make Image List"
+          }
+        },
+        "12": {
+          "inputs": {
+            "operation": "median",
+            "images": [
+              "7",
+              0
+            ]
+          },
+          "class_type": "BatchAverageImage",
+          "_meta": {
+            "title": "Batch Average Image"
+          }
+        },
+        "16": {
+          "inputs": {
+            "prompt": [
+              "38",
+              0
+            ],
+            "model": "gemini-2.5-flash-image-preview",
+            "seed": 425982986432749,
+            "aspect_ratio": "auto",
+            "response_modalities": "IMAGE+TEXT",
+            "system_prompt": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.",
+            "images": [
+              "18",
+              0
+            ]
+          },
+          "class_type": "GeminiImageNode",
+          "_meta": {
+            "title": "Google Gemini Image"
+          }
+        },
+        "18": {
+          "inputs": {
+            "images": [
+              "12",
+              0
+            ]
+          },
+          "class_type": "ImageListToImageBatch",
+          "_meta": {
+            "title": "Image List to Image Batch"
+          }
+        },
+        "22": {
+          "inputs": {
+            "filename_prefix": "bananagen",
+            "images": [
+              "16",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "Сохранить изображение"
+          }
+        },
+        "32": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "33": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "35": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "37": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "38": {
+          "inputs": {
+            "text_positive": [
+              "39",
+              0
+            ],
+            "text_negative": "",
+            "style": "sai-isometric",
+            "log_prompt": true,
+            "style_positive": true,
+            "style_negative": false
+          },
+          "class_type": "SDXLPromptStyler",
+          "_meta": {
+            "title": "SDXL Prompt Styler"
+          }
+        },
+        "39": {
+          "inputs": {
+            "text": "гладит кота на коленях"
+          },
+          "class_type": "Text Multiline",
+          "_meta": {
+            "title": "Text Multiline"
+          }
+        },
+        "40": {
+          "inputs": {
+            "text": "isometric style гладит кота на коленях . vibrant, beautiful, crisp, detailed, ultra detailed, intricate",
+            "anything": [
+              "38",
+              0
+            ]
+          },
+          "class_type": "easy showAnything",
+          "_meta": {
+            "title": "Show Any"
+          }
+        }
+      }
+    },
+    {
+      "viewComfyJSON": {
+        "title": "nanobanana 2",
+        "description": "",
+        "viewcomfyEndpoint": "",
+        "previewImages": [],
+        "inputs": [
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "32",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "32-inputs-image",
+                "id": "6b143d0d-c069-4c24-a262-f7bf739cae44"
+              }
+            ],
+            "key": "32-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "33",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "33-inputs-image",
+                "id": "b862d953-ea3f-456d-ba6a-2ad59b4de83f"
+              }
+            ],
+            "key": "33-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "35-inputs-image",
+                "id": "ce035dda-1a1a-4610-8b0b-dfe258b0e2a2"
+              }
+            ],
+            "key": "35-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "37",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "37-inputs-image",
+                "id": "4cab0289-7816-423f-9662-18f6e219de67"
+              }
+            ],
+            "key": "37-loadImage_ViewComfy"
+          },
+          {
+            "title": "Text Multiline",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "гладит кота на коленях",
+                "workflowPath": [
+                  "39",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "39-inputs-text"
+              }
+            ],
+            "key": "39-Text Multiline"
+          },
+          {
+            "title": "Nano Banana 2",
+            "inputs": [
+              {
+                "title": "Model",
+                "placeholder": "Model",
+                "value": "Nano Banana 2 (Gemini 3.1 Flash Image)",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "model"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-model",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Seed",
+                "placeholder": "Seed",
+                "value": 5e-324,
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "seed"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "seed",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-seed",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Соотношение сторон",
+                "placeholder": "Aspect_ratio",
+                "value": "auto",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "aspect_ratio"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-aspect_ratio",
+                "options": [
+                  {
+                    "label": "auto",
+                    "value": "auto"
+                  },
+                  {
+                    "label": "1:1",
+                    "value": "1:1"
+                  },
+                  {
+                    "label": "4:3",
+                    "value": "4:3"
+                  },
+                  {
+                    "label": "16:9",
+                    "value": "16:9"
+                  },
+                  {
+                    "label": "9:16",
+                    "value": "9:16"
+                  }
+                ]
+              },
+              {
+                "title": "Resolution",
+                "placeholder": "Resolution",
+                "value": "1K",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "resolution"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-resolution",
+                "options": [
+                  {
+                    "label": "1K",
+                    "value": "1K"
+                  },
+                  {
+                    "label": "2K",
+                    "value": "2K"
+                  },
+                  {
+                    "label": "4K",
+                    "value": "4K"
+                  }
+                ]
+              },
+              {
+                "title": "Response_modalities",
+                "placeholder": "Response_modalities",
+                "value": "IMAGE",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "response_modalities"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-response_modalities",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Thinking_level",
+                "placeholder": "Thinking_level",
+                "value": "MINIMAL",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "thinking_level"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-thinking_level",
+                "options": [
+                  {
+                    "label": "MINIMAL",
+                    "value": "MINIMAL"
+                  },
+                  {
+                    "label": "HIGH",
+                    "value": "HIGH"
+                  }
+                ]
+              },
+              {
+                "title": "System_prompt",
+                "placeholder": "System_prompt",
+                "value": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.",
+                "workflowPath": [
+                  "41",
+                  "inputs",
+                  "system_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "41-inputs-system_prompt",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "41-GeminiNanoBanana2"
+          },
+          {
+            "title": "SDXL Prompt Styler",
+            "inputs": [
+              {
+                "title": "Text_negative",
+                "placeholder": "Text_negative",
+                "value": "",
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "text_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "38-inputs-text_negative",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style",
+                "placeholder": "Style",
+                "value": "base",
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "автоматически дополняет промт для достижения определенного эффекта в генерации",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style",
+                "options": [
+                  {
+                    "label": "стандартный",
+                    "value": "base"
+                  },
+                  {
+                    "label": "улучшенный",
+                    "value": "sai-enchance"
+                  },
+                  {
+                    "label": "цифровой арт",
+                    "value": "sai-digital art"
+                  },
+                  {
+                    "label": "кинематографичный",
+                    "value": "sai-cinematic"
+                  },
+                  {
+                    "label": "изометрия",
+                    "value": "sai-isometric"
+                  },
+                  {
+                    "label": "3d",
+                    "value": "sai-3d-model"
+                  }
+                ],
+                "visibility": "active"
+              },
+              {
+                "title": "Log_prompt",
+                "placeholder": "Log_prompt",
+                "value": true,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "log_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-log_prompt",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_positive",
+                "placeholder": "Style_positive",
+                "value": true,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style_positive"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style_positive",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_negative",
+                "placeholder": "Style_negative",
+                "value": false,
+                "workflowPath": [
+                  "38",
+                  "inputs",
+                  "style_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "38-inputs-style_negative",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "38-SDXLPromptStyler"
+          }
+        ],
+        "advancedInputs": [
+          {
+            "title": "Batch Average Image",
+            "inputs": [
+              {
+                "title": "Operation",
+                "placeholder": "Operation",
+                "value": "median",
+                "workflowPath": [
+                  "12",
+                  "inputs",
+                  "operation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "12-inputs-operation",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "12-BatchAverageImage"
+          },
+          {
+            "title": "Сохранить изображение",
+            "inputs": [
+              {
+                "title": "Filename_prefix",
+                "placeholder": "Filename_prefix",
+                "value": "bananagen2",
+                "workflowPath": [
+                  "22",
+                  "inputs",
+                  "filename_prefix"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "22-inputs-filename_prefix",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "22-SaveImage"
+          },
+          {
+            "title": "Show Any",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "isometric style гладит кота на коленях . vibrant, beautiful, crisp, detailed, ultra detailed, intricate",
+                "workflowPath": [
+                  "40",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "40-inputs-text",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "40-easy showAnything"
+          }
+        ],
+        "id": "5f5db20b590448"
+      },
+      "workflowApiJSON": {
+        "5": {
+          "inputs": {
+            "images": [
+              "41",
+              0
+            ]
+          },
+          "class_type": "PreviewImage",
+          "_meta": {
+            "title": "Предварительный просмотр изображения"
+          }
+        },
+        "7": {
+          "inputs": {
+            "image1": [
+              "32",
+              0
+            ],
+            "image2": [
+              "33",
+              0
+            ],
+            "image3": [
+              "35",
+              0
+            ],
+            "image4": [
+              "37",
+              0
+            ]
+          },
+          "class_type": "ImpactMakeImageList",
+          "_meta": {
+            "title": "Make Image List"
+          }
+        },
+        "12": {
+          "inputs": {
+            "operation": "median",
+            "images": [
+              "7",
+              0
+            ]
+          },
+          "class_type": "BatchAverageImage",
+          "_meta": {
+            "title": "Batch Average Image"
+          }
+        },
+        "18": {
+          "inputs": {
+            "images": [
+              "12",
+              0
+            ]
+          },
+          "class_type": "ImageListToImageBatch",
+          "_meta": {
+            "title": "Image List to Image Batch"
+          }
+        },
+        "22": {
+          "inputs": {
+            "filename_prefix": "bananagen",
+            "images": [
+              "41",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "Сохранить изображение"
+          }
+        },
+        "32": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "33": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "35": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "37": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "38": {
+          "inputs": {
+            "text_positive": [
+              "39",
+              0
+            ],
+            "text_negative": "",
+            "style": "sai-isometric",
+            "log_prompt": true,
+            "style_positive": true,
+            "style_negative": false
+          },
+          "class_type": "SDXLPromptStyler",
+          "_meta": {
+            "title": "SDXL Prompt Styler"
+          }
+        },
+        "39": {
+          "inputs": {
+            "text": "гладит кота на коленях"
+          },
+          "class_type": "Text Multiline",
+          "_meta": {
+            "title": "Text Multiline"
+          }
+        },
+        "40": {
+          "inputs": {
+            "text": "isometric style гладит кота на коленях . vibrant, beautiful, crisp, detailed, ultra detailed, intricate",
+            "anything": [
+              "38",
+              0
+            ]
+          },
+          "class_type": "easy showAnything",
+          "_meta": {
+            "title": "Show Any"
+          }
+        },
+        "41": {
+          "inputs": {
+            "prompt": [
+              "38",
+              0
+            ],
+            "model": "Nano Banana 2 (Gemini 3.1 Flash Image)",
+            "seed": 42,
+            "aspect_ratio": "auto",
+            "resolution": "1K",
+            "response_modalities": "IMAGE",
+            "thinking_level": "MINIMAL",
+            "system_prompt": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.",
+            "images": [
+              "18",
+              0
+            ]
+          },
+          "class_type": "GeminiNanoBanana2",
+          "_meta": {
+            "title": "Nano Banana 2"
+          }
+        }
+      }
+    },
+    {
+      "viewComfyJSON": {
+        "title": "nano banana pro",
+        "description": "",
+        "viewcomfyEndpoint": "",
+        "previewImages": [],
+        "inputs": [
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "94",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "94-inputs-image",
+                "id": "e88aa757-190b-4f84-9cac-1eb9d4bb64b8"
+              }
+            ],
+            "key": "94-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "95",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "95-inputs-image",
+                "id": "d1310bca-392d-463f-a2b2-f5086d7d4fe8"
+              }
+            ],
+            "key": "95-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "96",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "96-inputs-image",
+                "id": "01bff809-8b00-41df-9464-4f89f67f524f"
+              }
+            ],
+            "key": "96-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "97",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "97-inputs-image",
+                "id": "f375fd05-448b-4038-90d0-ce280546c5b0"
+              }
+            ],
+            "key": "97-loadImage_ViewComfy"
+          },
+          {
+            "title": "Text Multiline",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "мужчина и девушка за праздничным столом",
+                "workflowPath": [
+                  "44",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "44-inputs-text"
+              }
+            ],
+            "key": "44-Text Multiline"
+          },
+          {
+            "title": "Nano Banana Pro (Google Gemini Image)",
+            "inputs": [
+              {
+                "title": "Model",
+                "placeholder": "Model",
+                "value": "gemini-3-pro-image-preview",
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "model"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "35-inputs-model",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Seed",
+                "placeholder": "Seed",
+                "value": 943624072967755,
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "seed"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "seed",
+                "validations": {
+                  "required": true
+                },
+                "key": "35-inputs-seed",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Соотношение сторон",
+                "placeholder": "Aspect_ratio",
+                "value": "auto",
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "aspect_ratio"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "35-inputs-aspect_ratio",
+                "options": [
+                  {
+                    "label": "auto",
+                    "value": "auto"
+                  },
+                  {
+                    "label": "1:1",
+                    "value": "1:1"
+                  },
+                  {
+                    "label": "4:3",
+                    "value": "4:3"
+                  },
+                  {
+                    "label": "16:9",
+                    "value": "16:9"
+                  },
+                  {
+                    "label": "9:16",
+                    "value": "9:16"
+                  }
+                ]
+              },
+              {
+                "title": "Разрешение",
+                "placeholder": "Resolution",
+                "value": "2K",
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "resolution"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "35-inputs-resolution",
+                "options": [
+                  {
+                    "label": "1K",
+                    "value": "1K"
+                  },
+                  {
+                    "label": "2K",
+                    "value": "2K"
+                  },
+                  {
+                    "label": "4K",
+                    "value": "4K"
+                  }
+                ]
+              },
+              {
+                "title": "Response_modalities",
+                "placeholder": "Response_modalities",
+                "value": "IMAGE",
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "response_modalities"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "35-inputs-response_modalities",
+                "visibility": "hidden"
+              },
+              {
+                "title": "System_prompt",
+                "placeholder": "System_prompt",
+                "value": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.\nIgnore blank white images, use images that have anything on them. Always generate something, and never output transparent or blank image",
+                "workflowPath": [
+                  "35",
+                  "inputs",
+                  "system_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "35-inputs-system_prompt",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "35-GeminiImage2Node"
+          },
+          {
+            "title": "SDXL Prompt Styler",
+            "inputs": [
+              {
+                "title": "Text_negative",
+                "placeholder": "Text_negative",
+                "value": "",
+                "workflowPath": [
+                  "43",
+                  "inputs",
+                  "text_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "43-inputs-text_negative",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Стиль ",
+                "placeholder": "Style",
+                "value": "base",
+                "workflowPath": [
+                  "43",
+                  "inputs",
+                  "style"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "43-inputs-style",
+                "options": [
+                  {
+                    "label": "стандартный",
+                    "value": "base"
+                  },
+                  {
+                    "label": "улучшенный",
+                    "value": "sai-enhance"
+                  },
+                  {
+                    "label": "цифровой арт",
+                    "value": "sai-digital art"
+                  },
+                  {
+                    "label": "кинематографичный",
+                    "value": "sai-cinematic"
+                  },
+                  {
+                    "label": "изометрия",
+                    "value": "sai-isometric"
+                  },
+                  {
+                    "label": "3d",
+                    "value": "sai-3d-model"
+                  }
+                ]
+              },
+              {
+                "title": "Log_prompt",
+                "placeholder": "Log_prompt",
+                "value": false,
+                "workflowPath": [
+                  "43",
+                  "inputs",
+                  "log_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "43-inputs-log_prompt",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_positive",
+                "placeholder": "Style_positive",
+                "value": true,
+                "workflowPath": [
+                  "43",
+                  "inputs",
+                  "style_positive"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "43-inputs-style_positive",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_negative",
+                "placeholder": "Style_negative",
+                "value": false,
+                "workflowPath": [
+                  "43",
+                  "inputs",
+                  "style_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "43-inputs-style_negative",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "43-SDXLPromptStyler"
+          }
+        ],
+        "advancedInputs": [
+          {
+            "title": "Сохранить изображение",
+            "inputs": [
+              {
+                "title": "Filename_prefix",
+                "placeholder": "Filename_prefix",
+                "value": "banana pro",
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "filename_prefix"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "30-inputs-filename_prefix",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "30-SaveImage"
+          },
+          {
+            "title": "Resize Image ♾️Mixlab",
+            "inputs": [
+              {
+                "title": "Width",
+                "placeholder": "Width",
+                "value": 1200,
+                "workflowPath": [
+                  "53",
+                  "inputs",
+                  "width"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "53-inputs-width",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Height",
+                "placeholder": "Height",
+                "value": 1200,
+                "workflowPath": [
+                  "53",
+                  "inputs",
+                  "height"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "53-inputs-height",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Scale_option",
+                "placeholder": "Scale_option",
+                "value": "center",
+                "workflowPath": [
+                  "53",
+                  "inputs",
+                  "scale_option"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "53-inputs-scale_option",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Average_color",
+                "placeholder": "Average_color",
+                "value": "off",
+                "workflowPath": [
+                  "53",
+                  "inputs",
+                  "average_color"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "53-inputs-average_color",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Fill_color",
+                "placeholder": "Fill_color",
+                "value": "#FFFFFF",
+                "workflowPath": [
+                  "53",
+                  "inputs",
+                  "fill_color"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "53-inputs-fill_color",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "53-ResizeImageMixlab"
+          },
+          {
+            "title": "Batch Average Image",
+            "inputs": [
+              {
+                "title": "Operation",
+                "placeholder": "Operation",
+                "value": "mean",
+                "workflowPath": [
+                  "98",
+                  "inputs",
+                  "operation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "98-inputs-operation",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "98-BatchAverageImage"
+          }
+        ],
+        "id": "78d0f68c7a0d7"
+      },
+      "workflowApiJSON": {
+        "30": {
+          "inputs": {
+            "filename_prefix": "banana pro",
+            "images": [
+              "35",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "Сохранить изображение"
+          }
+        },
+        "35": {
+          "inputs": {
+            "prompt": [
+              "43",
+              0
+            ],
+            "model": "gemini-3-pro-image-preview",
+            "seed": 943624072967755,
+            "aspect_ratio": "auto",
+            "resolution": "2K",
+            "response_modalities": "IMAGE",
+            "system_prompt": "You are an expert image-generation engine. You must ALWAYS produce an image.\nInterpret all user input—regardless of format, intent, or abstraction—as literal visual directives for image composition.\nIf a prompt is conversational or lacks specific visual details, you must creatively invent a concrete visual scenario that depicts the concept.\nPrioritize generating the visual representation above any text, formatting, or conversational requests.\nIgnore blank white images, use images that have anything on them. Always generate something, and never output transparent or blank image",
+            "images": [
+              "89",
+              0
+            ]
+          },
+          "class_type": "GeminiImage2Node",
+          "_meta": {
+            "title": "Nano Banana Pro (Google Gemini Image)"
+          }
+        },
+        "43": {
+          "inputs": {
+            "text_positive": [
+              "44",
+              0
+            ],
+            "text_negative": "",
+            "style": "base",
+            "log_prompt": false,
+            "style_positive": true,
+            "style_negative": false
+          },
+          "class_type": "SDXLPromptStyler",
+          "_meta": {
+            "title": "SDXL Prompt Styler"
+          }
+        },
+        "44": {
+          "inputs": {
+            "text": "мужчина и девушка за праздничным столом"
+          },
+          "class_type": "Text Multiline",
+          "_meta": {
+            "title": "Text Multiline"
+          }
+        },
+        "53": {
+          "inputs": {
+            "width": 1200,
+            "height": 1200,
+            "scale_option": "center",
+            "average_color": "off",
+            "fill_color": "#FFFFFF",
+            "image": [
+              "98",
+              0
+            ]
+          },
+          "class_type": "ResizeImageMixlab",
+          "_meta": {
+            "title": "Resize Image ♾️Mixlab"
+          }
+        },
+        "89": {
+          "inputs": {
+            "images": [
+              "53",
+              0
+            ]
+          },
+          "class_type": "ImageListToBatch_",
+          "_meta": {
+            "title": "Image List To Batch ♾️Mixlab"
+          }
+        },
+        "94": {
+          "inputs": {
+            "image": "generated_20260212_143314_001.png"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "95": {
+          "inputs": {
+            "image": "image (33).png"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "96": {
+          "inputs": {
+            "image": "Без названия (5).png"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "97": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "98": {
+          "inputs": {
+            "operation": "mean",
+            "images": [
+              "113",
+              0
+            ]
+          },
+          "class_type": "BatchAverageImage",
+          "_meta": {
+            "title": "Batch Average Image"
+          }
+        },
+        "108": {
+          "inputs": {
+            "images": [
+              "89",
+              0
+            ]
+          },
+          "class_type": "PreviewImage",
+          "_meta": {
+            "title": "Предварительный просмотр изображения"
+          }
+        },
+        "113": {
+          "inputs": {
+            "image1": [
+              "94",
+              0
+            ],
+            "image2": [
+              "95",
+              0
+            ],
+            "image3": [
+              "96",
+              0
+            ],
+            "image4": [
+              "97",
+              0
+            ]
+          },
+          "class_type": "ImpactMakeImageList",
+          "_meta": {
+            "title": "Make Image List"
+          }
+        }
+      }
+    },
+    {
+      "viewComfyJSON": {
+        "title": "Seedream 4.5",
+        "description": "",
+        "viewcomfyEndpoint": "",
+        "previewImages": [],
+        "inputs": [
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "23",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "23-inputs-image",
+                "id": "afb12320-9342-4fb3-ab8b-79b38785282b"
+              }
+            ],
+            "key": "23-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "24",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "24-inputs-image",
+                "id": "d0fa41d7-cc52-4212-8546-e936f009c7c3"
+              }
+            ],
+            "key": "24-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "25",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "25-inputs-image",
+                "id": "ced33130-8479-473d-977d-6c78115d6c4c"
+              }
+            ],
+            "key": "25-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "26",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "26-inputs-image",
+                "id": "7af2204c-f253-461d-8d37-9f44f4ed13c1"
+              }
+            ],
+            "key": "26-loadImage_ViewComfy"
+          },
+          {
+            "title": "Text Multiline",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "гладит кота на коленях",
+                "workflowPath": [
+                  "27",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "27-inputs-text"
+              }
+            ],
+            "key": "27-Text Multiline"
+          },
+          {
+            "title": "SDXL Prompt Styler",
+            "inputs": [
+              {
+                "title": "Text_negative",
+                "placeholder": "Text_negative",
+                "value": "",
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "text_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "30-inputs-text_negative",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Стиль ",
+                "placeholder": "Style",
+                "value": "base",
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "style"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": false
+                },
+                "key": "30-inputs-style",
+                "options": [
+                  {
+                    "label": "стандартный",
+                    "value": "base"
+                  },
+                  {
+                    "label": "улучшенный",
+                    "value": "sai-enhance"
+                  },
+                  {
+                    "label": "цифровой арт",
+                    "value": "sai-digital art"
+                  },
+                  {
+                    "label": "кинематографичный",
+                    "value": "sai-cinematic"
+                  },
+                  {
+                    "label": "изометрия",
+                    "value": "sai-isometric"
+                  },
+                  {
+                    "label": "3d",
+                    "value": "sai-3d-model"
+                  }
+                ]
+              },
+              {
+                "title": "Log_prompt",
+                "placeholder": "Log_prompt",
+                "value": true,
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "log_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "30-inputs-log_prompt",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_positive",
+                "placeholder": "Style_positive",
+                "value": true,
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "style_positive"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "30-inputs-style_positive",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_negative",
+                "placeholder": "Style_negative",
+                "value": false,
+                "workflowPath": [
+                  "30",
+                  "inputs",
+                  "style_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "30-inputs-style_negative",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "30-SDXLPromptStyler"
+          },
+          {
+            "title": "ByteDance Seedream 4",
+            "inputs": [
+              {
+                "title": "Model",
+                "placeholder": "Model",
+                "value": "seedream-4-5-251128",
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "model"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-model",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Разрешение (пресет)",
+                "placeholder": "Size_preset",
+                "value": "2048x2048 (1:1)",
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "size_preset"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-size_preset",
+                "options": [
+                  {
+                    "label": "2048x2048 (1:1)",
+                    "value": "2048x2048 (1:1)"
+                  },
+                  {
+                    "label": "2304x1728 (4:3)",
+                    "value": "2304x1728 (4:3)"
+                  },
+                  {
+                    "label": "1728x2304 (3:4)",
+                    "value": "1728x2304 (3:4)"
+                  },
+                  {
+                    "label": "2560x1440 (16:9)",
+                    "value": "2560x1440 (16:9)"
+                  },
+                  {
+                    "label": "1440x2560 (9:16)",
+                    "value": "1440x2560 (9:16)"
+                  },
+                  {
+                    "label": "2496x1664 (3:2)",
+                    "value": "2496x1664 (3:2)"
+                  },
+                  {
+                    "label": "1664x2496 (2:3)",
+                    "value": "1664x2496 (2:3)"
+                  },
+                  {
+                    "label": "3024x1296 (21:9)",
+                    "value": "3024x1296 (21:9)"
+                  },
+                  {
+                    "label": "4096x4096 (1:1)",
+                    "value": "4096x4096 (1:1)"
+                  },
+                  {
+                    "label": "Custom",
+                    "value": "Custom"
+                  }
+                ]
+              },
+              {
+                "title": "Ширина (если выбрал пресет custom)",
+                "placeholder": "Width",
+                "value": 2048,
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "width"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-width"
+              },
+              {
+                "title": "Высота (если выбрал пресет custom)",
+                "placeholder": "Height",
+                "value": 2048,
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "height"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-height"
+              },
+              {
+                "title": "Sequential_image_generation",
+                "placeholder": "Sequential_image_generation",
+                "value": "disabled",
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "sequential_image_generation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-sequential_image_generation",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Max_images",
+                "placeholder": "Max_images",
+                "value": 1,
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "max_images"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "1-inputs-max_images",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Watermark",
+                "placeholder": "Watermark",
+                "value": false,
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "watermark"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "1-inputs-watermark",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Fail_on_partial",
+                "placeholder": "Fail_on_partial",
+                "value": true,
+                "workflowPath": [
+                  "1",
+                  "inputs",
+                  "fail_on_partial"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "1-inputs-fail_on_partial",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "1-ByteDanceSeedreamNode"
+          }
+        ],
+        "advancedInputs": [
+          {
+            "title": "Сохранить изображение",
+            "inputs": [
+              {
+                "title": "Filename_prefix",
+                "placeholder": "Filename_prefix",
+                "value": "seedream",
+                "workflowPath": [
+                  "12",
+                  "inputs",
+                  "filename_prefix"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "12-inputs-filename_prefix",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "12-SaveImage"
+          },
+          {
+            "title": "Batch Average Image",
+            "inputs": [
+              {
+                "title": "Operation",
+                "placeholder": "Operation",
+                "value": "median",
+                "workflowPath": [
+                  "22",
+                  "inputs",
+                  "operation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "22-inputs-operation",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "22-BatchAverageImage"
+          },
+          {
+            "title": "Random Number",
+            "inputs": [
+              {
+                "title": "Number_type",
+                "placeholder": "Number_type",
+                "value": "integer",
+                "workflowPath": [
+                  "31",
+                  "inputs",
+                  "number_type"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "31-inputs-number_type",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Minimum",
+                "placeholder": "Minimum",
+                "value": 0,
+                "workflowPath": [
+                  "31",
+                  "inputs",
+                  "minimum"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "31-inputs-minimum",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Maximum",
+                "placeholder": "Maximum",
+                "value": 2147483647,
+                "workflowPath": [
+                  "31",
+                  "inputs",
+                  "maximum"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "31-inputs-maximum",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Seed",
+                "placeholder": "Seed",
+                "value": 121882911218259,
+                "workflowPath": [
+                  "31",
+                  "inputs",
+                  "seed"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "seed",
+                "validations": {
+                  "required": true
+                },
+                "key": "31-inputs-seed",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "31-Random Number"
+          }
+        ],
+        "id": "cc3efdcfda85f"
+      },
+      "workflowApiJSON": {
+        "1": {
+          "inputs": {
+            "model": "seedream-4-5-251128",
+            "prompt": [
+              "30",
+              0
+            ],
+            "size_preset": "2048x2048 (1:1)",
+            "width": 2048,
+            "height": 2048,
+            "sequential_image_generation": "disabled",
+            "max_images": 1,
+            "seed": [
+              "31",
+              2
+            ],
+            "watermark": false,
+            "fail_on_partial": true,
+            "image": [
+              "29",
+              0
+            ]
+          },
+          "class_type": "ByteDanceSeedreamNode",
+          "_meta": {
+            "title": "ByteDance Seedream 4"
+          }
+        },
+        "12": {
+          "inputs": {
+            "filename_prefix": "seedream",
+            "images": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "Сохранить изображение"
+          }
+        },
+        "22": {
+          "inputs": {
+            "operation": "median",
+            "images": [
+              "28",
+              0
+            ]
+          },
+          "class_type": "BatchAverageImage",
+          "_meta": {
+            "title": "Batch Average Image"
+          }
+        },
+        "23": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "24": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "25": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "26": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "27": {
+          "inputs": {
+            "text": "гладит кота на коленях"
+          },
+          "class_type": "Text Multiline",
+          "_meta": {
+            "title": "Text Multiline"
+          }
+        },
+        "28": {
+          "inputs": {
+            "image1": [
+              "23",
+              0
+            ],
+            "image2": [
+              "24",
+              0
+            ],
+            "image3": [
+              "25",
+              0
+            ],
+            "image4": [
+              "26",
+              0
+            ]
+          },
+          "class_type": "ImpactMakeImageList",
+          "_meta": {
+            "title": "Make Image List"
+          }
+        },
+        "29": {
+          "inputs": {
+            "images": [
+              "22",
+              0
+            ]
+          },
+          "class_type": "ImageListToImageBatch",
+          "_meta": {
+            "title": "Image List to Image Batch"
+          }
+        },
+        "30": {
+          "inputs": {
+            "text_positive": [
+              "27",
+              0
+            ],
+            "text_negative": "",
+            "style": "sai-isometric",
+            "log_prompt": true,
+            "style_positive": true,
+            "style_negative": false
+          },
+          "class_type": "SDXLPromptStyler",
+          "_meta": {
+            "title": "SDXL Prompt Styler"
+          }
+        },
+        "31": {
+          "inputs": {
+            "number_type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "seed": 121882911218259
+          },
+          "class_type": "Random Number",
+          "_meta": {
+            "title": "Random Number"
+          }
+        }
+      }
+    },
+    {
+      "viewComfyJSON": {
+        "title": "Flux 2 pro",
+        "description": "",
+        "viewcomfyEndpoint": "",
+        "previewImages": [],
+        "inputs": [
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "3",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "3-inputs-image",
+                "id": "07417c9f-294a-4f2f-8277-2c79d100d353"
+              }
+            ],
+            "key": "3-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "4",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "4-inputs-image",
+                "id": "10ea39e8-ae62-46c5-b13c-851b0806600b"
+              }
+            ],
+            "key": "4-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "5",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "5-inputs-image",
+                "id": "98ec3d17-d2c1-48da-8b89-19fca46c04ff"
+              }
+            ],
+            "key": "5-loadImage_ViewComfy"
+          },
+          {
+            "title": "ViewComfy - Load Image",
+            "inputs": [
+              {
+                "title": "ViewComfy - Load Image",
+                "placeholder": "ViewComfy - Load Image",
+                "value": null,
+                "workflowPath": [
+                  "6",
+                  "inputs",
+                  "image"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "image",
+                "validations": {
+                  "required": false
+                },
+                "key": "6-inputs-image",
+                "id": "9d666257-1f51-43da-b143-7a4684fb79bc"
+              }
+            ],
+            "key": "6-loadImage_ViewComfy"
+          },
+          {
+            "title": "Text Multiline",
+            "inputs": [
+              {
+                "title": "Text",
+                "placeholder": "Text",
+                "value": "гладит кота на коленях",
+                "workflowPath": [
+                  "7",
+                  "inputs",
+                  "text"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "long-text",
+                "validations": {
+                  "required": true
+                },
+                "key": "7-inputs-text"
+              }
+            ],
+            "key": "7-Text Multiline"
+          },
+          {
+            "title": "SDXL Prompt Styler",
+            "inputs": [
+              {
+                "title": "Text_negative",
+                "placeholder": "Text_negative",
+                "value": "",
+                "workflowPath": [
+                  "10",
+                  "inputs",
+                  "text_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "10-inputs-text_negative",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Стиль ",
+                "placeholder": "Style",
+                "value": "base",
+                "workflowPath": [
+                  "10",
+                  "inputs",
+                  "style"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "select",
+                "validations": {
+                  "required": false,
+                  "errorMsg": "автоматически дополняет промт для достижения определенного эффекта в генерации"
+                },
+                "key": "10-inputs-style",
+                "options": [
+                  {
+                    "label": "стандартный",
+                    "value": "base"
+                  },
+                  {
+                    "label": "улучшенный",
+                    "value": "sai-enhance"
+                  },
+                  {
+                    "label": "цифровой арт",
+                    "value": "sai-digital art"
+                  },
+                  {
+                    "label": "кинематографичный",
+                    "value": "sai-cinematic"
+                  },
+                  {
+                    "label": "изометрия",
+                    "value": "sai-isometric"
+                  },
+                  {
+                    "label": "3d",
+                    "value": "sai-3d-model"
+                  }
+                ]
+              },
+              {
+                "title": "Log_prompt",
+                "placeholder": "Log_prompt",
+                "value": true,
+                "workflowPath": [
+                  "10",
+                  "inputs",
+                  "log_prompt"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "10-inputs-log_prompt",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_positive",
+                "placeholder": "Style_positive",
+                "value": true,
+                "workflowPath": [
+                  "10",
+                  "inputs",
+                  "style_positive"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "10-inputs-style_positive",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Style_negative",
+                "placeholder": "Style_negative",
+                "value": false,
+                "workflowPath": [
+                  "10",
+                  "inputs",
+                  "style_negative"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "10-inputs-style_negative",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "10-SDXLPromptStyler"
+          },
+          {
+            "title": "Flux.2 [pro] Image",
+            "inputs": [
+              {
+                "title": "Ширина",
+                "placeholder": "Width",
+                "value": 1024,
+                "workflowPath": [
+                  "14",
+                  "inputs",
+                  "width"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "14-inputs-width"
+              },
+              {
+                "title": "Высота",
+                "placeholder": "Height",
+                "value": 768,
+                "workflowPath": [
+                  "14",
+                  "inputs",
+                  "height"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "number",
+                "validations": {
+                  "required": true
+                },
+                "key": "14-inputs-height"
+              },
+              {
+                "title": "Seed",
+                "placeholder": "Seed",
+                "value": 5e-324,
+                "workflowPath": [
+                  "14",
+                  "inputs",
+                  "seed"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "seed",
+                "validations": {
+                  "required": true
+                },
+                "key": "14-inputs-seed",
+                "visibility": "hidden"
+              },
+              {
+                "title": "Творчески доработать текущий промт?",
+                "placeholder": "Prompt_upsampling",
+                "value": false,
+                "workflowPath": [
+                  "14",
+                  "inputs",
+                  "prompt_upsampling"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "может дать более интересные, но и более непредсказуемые варианты",
+                "valueType": "boolean",
+                "validations": {
+                  "required": false
+                },
+                "key": "14-inputs-prompt_upsampling"
+              }
+            ],
+            "key": "14-Flux2ProImageNode"
+          }
+        ],
+        "advancedInputs": [
+          {
+            "title": "Batch Average Image",
+            "inputs": [
+              {
+                "title": "Operation",
+                "placeholder": "Operation",
+                "value": "median",
+                "workflowPath": [
+                  "2",
+                  "inputs",
+                  "operation"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "2-inputs-operation",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "2-BatchAverageImage"
+          },
+          {
+            "title": "Сохранить изображение",
+            "inputs": [
+              {
+                "title": "Filename_prefix",
+                "placeholder": "Filename_prefix",
+                "value": "flux_2",
+                "workflowPath": [
+                  "21",
+                  "inputs",
+                  "filename_prefix"
+                ],
+                "helpText": "Helper Text",
+                "tooltip": "",
+                "valueType": "string",
+                "validations": {
+                  "required": true
+                },
+                "key": "21-inputs-filename_prefix",
+                "visibility": "hidden"
+              }
+            ],
+            "key": "21-SaveImage"
+          }
+        ],
+        "id": "ee455ceecfb338"
+      },
+      "workflowApiJSON": {
+        "2": {
+          "inputs": {
+            "operation": "median",
+            "images": [
+              "8",
+              0
+            ]
+          },
+          "class_type": "BatchAverageImage",
+          "_meta": {
+            "title": "Batch Average Image"
+          }
+        },
+        "3": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "4": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "5": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "6": {
+          "inputs": {
+            "image": "None"
+          },
+          "class_type": "loadImage_ViewComfy",
+          "_meta": {
+            "title": "ViewComfy - Load Image"
+          }
+        },
+        "7": {
+          "inputs": {
+            "text": "гладит кота на коленях"
+          },
+          "class_type": "Text Multiline",
+          "_meta": {
+            "title": "Text Multiline"
+          }
+        },
+        "8": {
+          "inputs": {
+            "image1": [
+              "3",
+              0
+            ],
+            "image2": [
+              "4",
+              0
+            ],
+            "image3": [
+              "5",
+              0
+            ],
+            "image4": [
+              "6",
+              0
+            ]
+          },
+          "class_type": "ImpactMakeImageList",
+          "_meta": {
+            "title": "Make Image List"
+          }
+        },
+        "9": {
+          "inputs": {
+            "images": [
+              "2",
+              0
+            ]
+          },
+          "class_type": "ImageListToImageBatch",
+          "_meta": {
+            "title": "Image List to Image Batch"
+          }
+        },
+        "10": {
+          "inputs": {
+            "text_positive": [
+              "7",
+              0
+            ],
+            "text_negative": "",
+            "style": "sai-isometric",
+            "log_prompt": true,
+            "style_positive": true,
+            "style_negative": false
+          },
+          "class_type": "SDXLPromptStyler",
+          "_meta": {
+            "title": "SDXL Prompt Styler"
+          }
+        },
+        "14": {
+          "inputs": {
+            "prompt": [
+              "10",
+              0
+            ],
+            "width": 1024,
+            "height": 768,
+            "seed": 0,
+            "prompt_upsampling": true,
+            "images": [
+              "9",
+              0
+            ]
+          },
+          "class_type": "Flux2ProImageNode",
+          "_meta": {
+            "title": "Flux.2 [pro] Image"
+          }
+        },
+        "21": {
+          "inputs": {
+            "filename_prefix": "banana pro",
+            "images": [
+              "14",
+              0
+            ]
+          },
+          "class_type": "SaveImage",
+          "_meta": {
+            "title": "Сохранить изображение"
+          }
+        }
+      }
+    }
+  ]
+}

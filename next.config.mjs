@@ -1,8 +1,24 @@
-import {withSentryConfig} from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: { remotePatterns: [{ hostname: "*" }] },
   output: "standalone",
+  devIndicators: false,
+
+  experimental: {
+    middlewareClientMaxBodySize: 100 * 1024 * 1024, // 100MB
+  },
+
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/playground",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

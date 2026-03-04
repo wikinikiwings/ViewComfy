@@ -45,6 +45,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@sentry/nextjs": "^10.27.0",
+    "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -78,6 +79,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^24",
     "@types/react": "19.2.4",
@@ -88,10 +90,10 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.2",
+    "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5",
-    "openapi-typescript-codegen": "^0.29.0"
+    "typescript": "^5"
   },
   "overrides": {
     "@types/react": "19.2.4",

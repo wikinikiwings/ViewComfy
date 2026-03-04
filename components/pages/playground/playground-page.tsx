@@ -14,7 +14,7 @@ import {
     DrawerContent,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
+import { Fragment, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import PlaygroundForm from "./playground-form";
 import { usePostPlayground } from "@/hooks/playground/use-post-playground";
 import { ActionType, type IViewComfy, type IViewComfyWorkflow, useViewComfy } from "@/app/providers/view-comfy-provider";
@@ -36,6 +36,7 @@ import {
     DialogContent,
     DialogFooter,
     DialogTrigger,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import {
     AlertDialog,
@@ -51,6 +52,8 @@ import {
 import { toast } from "sonner"
 import { IUsePostPlayground } from "@/hooks/playground/interfaces";
 import { HistorySidebar } from "@/components/history-sidebar";
+import { saveToHistory, refreshAllHistory } from "@/hooks/use-local-history";
+import { useUser } from "@/app/providers/user-provider";
 import { Textarea } from "@/components/ui/textarea";
 import * as constants from "@/app/constants";
 import { ISetResults, S3FilesData } from "@/app/models/prompt-result";
@@ -117,7 +120,7 @@ function PlaygroundWithAuth({ userId }: { userId: string | null }) {
 
 function PlaygroundWithoutAuth() {
     const params = usePostPlayground();
-    return <PlaygroundPageContent {...{ ...params, runningWorkflows: [], workflowsCompleted: [], cancellingWorkflows: [], setCancellingWorkflow: () => {}, removeRunningWorkflow: () => {}, removeCancellingWorkflow: () => {}, cancelJob: undefined }} />;
+    return <PlaygroundPageContent {...{ ...params, runningWorkflows: [], workflowsCompleted: [], cancellingWorkflows: [], setCancellingWorkflow: () => {}, removeRunningWorkflow: () => {}, removeCancellingWorkflow: () => {}, cancelJob: undefined, activeJobs: params.activeJobs ?? 0 }} />;
 }
 
 interface IPlaygroundPageContent {
@@ -131,6 +134,7 @@ interface IPlaygroundPageContent {
     removeRunningWorkflow: (promptId: string) => void;
     removeCancellingWorkflow: (promptId: string) => void;
     cancelJob?: (promptId: string) => Promise<unknown>;
+    activeJobs?: number;
 }
 
 const getOutputFileName = (output: { file: File | S3FilesData, url: string }): string => {
@@ -149,7 +153,7 @@ const getOutputContentType = (output: IOutput): string => {
     }
 }
 
-function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, workflowsCompleted, cancellingWorkflows, setCancellingWorkflow, removeRunningWorkflow, removeCancellingWorkflow, cancelJob }: IPlaygroundPageContent) {
+function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, workflowsCompleted, cancellingWorkflows, setCancellingWorkflow, removeRunningWorkflow, removeCancellingWorkflow, cancelJob, activeJobs = 0 }: IPlaygroundPageContent) {
     const [results, setResults] = useState<IResults>({});
     const { viewComfyState, viewComfyStateDispatcher } = useViewComfy();
     const { runningExecutions, completedExecutions, addRunningExecution, clearCompletedExecution } = useApiAppExecutionData();
@@ -169,9 +173,13 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
     const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
     const [textOutputEnabled, setTextOutputEnabled] = useState(false);
     const [showOutputFileName, setShowOutputFileName] = useState(false);
+    const { username } = useUser();
+    // Track per-generation metadata for local history (keyed by promptId)
+    const generationMetaRef = useRef<Map<string, { startTime: number; promptData: Record<string, unknown>; workflowName: string }>>(new Map());
     const [permission, setPermission] = useState<"default" | "granted" | "denied">("default");
     const [isRequesting, setIsRequesting] = useState(false);
-    const isNotificationAvailable = window && 'Notification' in window;
+    const isNotificationAvailable =
+    typeof window !== "undefined" && "Notification" in window;
 
     const requestPermission = useCallback(async () => {
         if (!isNotificationAvailable) {
@@ -355,7 +363,37 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
         });
         setLoading(false);
         await sendNotification();
-    }, [setLoading, sendNotification]);
+
+        // Auto-save to local history using per-generation metadata
+        if (username && (!status || status !== "error")) {
+            const fileOutputs = resultOutputs
+                .map(o => o.file)
+                .filter((f): f is File => f instanceof File);
+            if (fileOutputs.length > 0) {
+                const meta = generationMetaRef.current.get(promptId);
+                const executionTime = meta && meta.startTime > 0
+                    ? (Date.now() - meta.startTime) / 1000
+                    : 0;
+                const workflowName = meta?.workflowName
+                    || viewComfyState.currentViewComfy?.viewComfyJSON?.title
+                    || "Unknown Workflow";
+                const promptData = meta?.promptData || {};
+                saveToHistory({
+                    username,
+                    workflowName,
+                    promptData,
+                    executionTimeSeconds: executionTime,
+                    outputFiles: fileOutputs,
+                }).then(() => {
+                    console.log("[History] Saved generation to local history");
+                    generationMetaRef.current.delete(promptId);
+                    refreshAllHistory();
+                }).catch((err) => {
+                    console.error("[History] Failed to save:", err);
+                });
+            }
+        }
+    }, [setLoading, sendNotification, username, viewComfyState.currentViewComfy]);
 
     useEffect(() => {
         if (workflowsCompleted.length === 0) {
@@ -407,11 +445,29 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
         setTextOutputEnabled(data.textOutputEnabled ?? false);
         setShowOutputFileName(data.showOutputFileName ?? false);
 
+        // Capture prompt data and start time per generation
+        const generationStartTime = Date.now();
+        const promptCapture: Record<string, unknown> = {};
+        for (const input of generationData.inputs) {
+            if (typeof input.value === "string" || typeof input.value === "number" || typeof input.value === "boolean") {
+                promptCapture[input.key] = input.value;
+            }
+        }
+        const workflowName = viewComfyState.currentViewComfy?.viewComfyJSON?.title
+            || viewComfyState.currentViewComfy?.viewComfyJSON?.viewcomfyEndpoint
+            || "Unknown Workflow";
+
         const doPostParams = {
             viewComfy: generationData,
             workflow: viewComfyState.currentViewComfy?.workflowApiJSON,
             viewcomfyEndpoint: viewComfyState.currentViewComfy?.viewComfyJSON.viewcomfyEndpoint ?? "",
             onSuccess: (params: { promptId: string, outputs: File[] }) => {
+                // Store metadata keyed by promptId so onSetResults picks up the right data
+                generationMetaRef.current.set(params.promptId, {
+                    startTime: generationStartTime,
+                    promptData: promptCapture,
+                    workflowName,
+                });
                 onSetResults({ ...params });
 
             }, onError: (error: any) => {
@@ -573,6 +629,7 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
                     viewComfyJSON={viewComfyState.currentViewComfy.viewComfyJSON}
                     onSubmit={onSubmit}
                     loading={loading}
+                    activeJobs={activeJobs}
                 />
             );
         }
@@ -677,7 +734,7 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
                             </div>
                         </ScrollArea>
                         <div className="py-4 pr-1 h-full">
-                            <HistorySidebar open={historySidebarOpen} setOpen={setHistorySidebarOpen} appType={appType} apiApp={apiApp} />
+                            <HistorySidebar open={historySidebarOpen} setOpen={setHistorySidebarOpen} />
                         </div>
                     </div>
                 </main>
@@ -789,6 +846,9 @@ export function ImageDialog({ output, showOutputFileName }: { output: { file: Fi
             </DialogTrigger>
             {showOutputFileName && parseFileName(getOutputFileName(output))}
             <DialogContent className="max-w-fit max-h-[90vh] border-0 p-0 bg-transparent [&>button]:bg-background [&>button]:border [&>button]:border-border [&>button]:rounded-full [&>button]:p-1 [&>button]:shadow-md">
+                <DialogTitle className="sr-only">
+                    {`Просмотр изображения: ${parseFileName(getOutputFileName(output))}`}
+                </DialogTitle>
                 <div
                     className="rounded-md"
                     style={{
@@ -862,6 +922,9 @@ export function VideoDialog({ output }: { output: IOutput }) {
                 </div>
             </DialogTrigger>
             <DialogContent className="max-w-fit max-h-[90vh] border-0 p-0 bg-transparent [&>button]:bg-background [&>button]:border [&>button]:border-border [&>button]:rounded-full [&>button]:p-1 [&>button]:shadow-md">
+                <DialogTitle className="sr-only">
+                    {`Просмотр видео: ${parseFileName(getOutputFileName(output))}`}
+                </DialogTitle>
                 <video
                     key={output.url}
                     className="max-h-[85vh] w-auto object-contain rounded-md"
@@ -891,6 +954,9 @@ export function AudioDialog({ output }: { output: IOutput }) {
                 </div>
             </DialogTrigger>
             <DialogContent className="max-w-fit max-h-[90vh] border-0 p-0 bg-transparent [&>button]:bg-background [&>button]:border [&>button]:border-border [&>button]:rounded-full [&>button]:p-1 [&>button]:shadow-md">
+                <DialogTitle className="sr-only">
+                    {`Просмотр аудио: ${parseFileName(getOutputFileName(output))}`}
+                </DialogTitle>
                 <audio src={output.url} controls />
             </DialogContent>
         </Dialog>
@@ -1019,6 +1085,7 @@ export function ImageCompareDialog({ image1, image2, onClose, isOpen }: { image1
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogContent className="max-w-fit max-h-[90vh] border-0 p-0 bg-transparent [&>button]:bg-background [&>button]:border [&>button]:border-border [&>button]:rounded-full [&>button]:p-1 [&>button]:shadow-md">
+                <DialogTitle className="sr-only">Сравнение изображений</DialogTitle>
                 <div className="inline-block">
                     <ImgComparisonSlider>
                         <img slot="first" alt="first image" src={image1} className="max-h-[85vh] w-auto object-contain" />
