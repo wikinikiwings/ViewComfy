@@ -1,37 +1,57 @@
 import { IViewComfy } from "@/app/interfaces/comfy-input";
 import { ErrorTypes, ResponseError } from "@/app/models/errors";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { IUsePostPlayground, IPlaygroundParams } from "@/hooks/playground/interfaces";
 import { ImageMasked, PromptResult } from "@/app/models/prompt-result";
 import { v4 as uuidv4 } from 'uuid';
 
+export interface LocalRunningJob {
+    jobId: string;
+}
+
 export const usePostPlayground = () => {
-    const [activeJobs, setActiveJobs] = useState(0);
-    const loading = activeJobs > 0;
+    const [localRunningJobs, setLocalRunningJobs] = useState<LocalRunningJob[]>([]);
+    const abortControllers = useRef<Map<string, AbortController>>(new Map());
+    const loading = localRunningJobs.length > 0;
 
     const doPost = useCallback(async ({ viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError }: IUsePostPlayground) => {
-        const params = { viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError };
-        setActiveJobs(prev => prev + 1);
+        const jobId = uuidv4();
+        const controller = new AbortController();
+        abortControllers.current.set(jobId, controller);
+        setLocalRunningJobs(prev => [...prev, { jobId }]);
+
         try {
-            await inferLocalComfy(params);
-            // onSuccess → onSetResults → setLoading(false) handles decrement
-        } catch (error) {
-            onError(error);
-            // Decrement on error since onSetResults won't be called
-            setActiveJobs(prev => Math.max(0, prev - 1));
+            await inferLocalComfy({
+                viewComfy, workflow, viewcomfyEndpoint, onSuccess,
+                signal: controller.signal,
+            });
+        } catch (error: any) {
+            if (error?.name === 'AbortError') {
+                // Cancelled by user, don't call onError
+            } else {
+                onError(error);
+            }
+        }
+        abortControllers.current.delete(jobId);
+        setLocalRunningJobs(prev => prev.filter(j => j.jobId !== jobId));
+    }, []);
+
+    const cancelLocalJob = useCallback((jobId: string) => {
+        const controller = abortControllers.current.get(jobId);
+        if (controller) {
+            controller.abort();
+            abortControllers.current.delete(jobId);
+            setLocalRunningJobs(prev => prev.filter(j => j.jobId !== jobId));
         }
     }, []);
 
-    // setLoading mapped to counter for compatibility with shared PlaygroundPageContent
-    const setLoading = useCallback((val: boolean) => {
-        if (val) {
-            setActiveJobs(prev => prev + 1);
-        } else {
-            setActiveJobs(prev => Math.max(0, prev - 1));
-        }
+    // Compatibility shim — setLoading(false) is called from onSetResults
+    // but jobs now self-remove, so this is mostly a no-op
+    const setLoading = useCallback((_val: boolean) => {
+        // no-op: jobs track themselves
     }, []);
 
-    return { doPost, loading, setLoading, activeJobs };
+    return { doPost, loading, setLoading, localRunningJobs, cancelLocalJob };
 }
 
 function concatUint8Arrays(a: Uint8Array, b: Uint8Array): Uint8Array {
@@ -341,9 +361,9 @@ class Secret {
     }
 }
 
-const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params: { promptId: string, outputs: File[] }) => void }) => {
+const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params: { promptId: string, outputs: File[] }) => void; signal?: AbortSignal }) => {
 
-    const { viewComfy, workflow, viewcomfyEndpoint, onSuccess } = params;
+    const { viewComfy, workflow, viewcomfyEndpoint, onSuccess, signal } = params;
 
     const url = viewcomfyEndpoint ? "/api/viewcomfy" : "/api/comfy";
 
@@ -371,6 +391,7 @@ const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params:
     const response = await fetch(url, {
         method: 'POST',
         body: formData,
+        signal,
     });
 
     if (!response.ok) {

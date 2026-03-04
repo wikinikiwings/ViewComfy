@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/drawer"
 import { Fragment, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import PlaygroundForm from "./playground-form";
-import { usePostPlayground } from "@/hooks/playground/use-post-playground";
+import { usePostPlayground, type LocalRunningJob } from "@/hooks/playground/use-post-playground";
 import { ActionType, type IViewComfy, type IViewComfyWorkflow, useViewComfy } from "@/app/providers/view-comfy-provider";
 import { ErrorAlertDialog } from "@/components/ui/error-alert-dialog";
 import { ApiErrorDialog } from "@/components/ui/api-error-dialog";
@@ -120,7 +120,7 @@ function PlaygroundWithAuth({ userId }: { userId: string | null }) {
 
 function PlaygroundWithoutAuth() {
     const params = usePostPlayground();
-    return <PlaygroundPageContent {...{ ...params, runningWorkflows: [], workflowsCompleted: [], cancellingWorkflows: [], setCancellingWorkflow: () => {}, removeRunningWorkflow: () => {}, removeCancellingWorkflow: () => {}, cancelJob: undefined, activeJobs: params.activeJobs ?? 0 }} />;
+    return <PlaygroundPageContent {...{ ...params, runningWorkflows: [], workflowsCompleted: [], cancellingWorkflows: [], setCancellingWorkflow: () => {}, removeRunningWorkflow: () => {}, removeCancellingWorkflow: () => {}, cancelJob: undefined }} />;
 }
 
 interface IPlaygroundPageContent {
@@ -134,7 +134,8 @@ interface IPlaygroundPageContent {
     removeRunningWorkflow: (promptId: string) => void;
     removeCancellingWorkflow: (promptId: string) => void;
     cancelJob?: (promptId: string) => Promise<unknown>;
-    activeJobs?: number;
+    localRunningJobs?: LocalRunningJob[];
+    cancelLocalJob?: (jobId: string) => void;
 }
 
 const getOutputFileName = (output: { file: File | S3FilesData, url: string }): string => {
@@ -153,7 +154,7 @@ const getOutputContentType = (output: IOutput): string => {
     }
 }
 
-function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, workflowsCompleted, cancellingWorkflows, setCancellingWorkflow, removeRunningWorkflow, removeCancellingWorkflow, cancelJob, activeJobs = 0 }: IPlaygroundPageContent) {
+function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, workflowsCompleted, cancellingWorkflows, setCancellingWorkflow, removeRunningWorkflow, removeCancellingWorkflow, cancelJob, localRunningJobs = [], cancelLocalJob }: IPlaygroundPageContent) {
     const [results, setResults] = useState<IResults>({});
     const { viewComfyState, viewComfyStateDispatcher } = useViewComfy();
     const { runningExecutions, completedExecutions, addRunningExecution, clearCompletedExecution } = useApiAppExecutionData();
@@ -629,7 +630,7 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
                     viewComfyJSON={viewComfyState.currentViewComfy.viewComfyJSON}
                     onSubmit={onSubmit}
                     loading={loading}
-                    activeJobs={activeJobs}
+                    activeJobs={localRunningJobs.length}
                 />
             );
         }
@@ -700,7 +701,7 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
                             )}
                             <div className="flex-1 h-full p-4 flex overflow-y-auto">
                                 <div className="flex flex-col w-full h-full">
-                                    <Generating loading={loading} runningWorkflows={runningWorkflows} runningApiExecutions={runningExecutions} cancellingWorkflows={cancellingWorkflows} onCancelWorkflow={handleCancelWorkflow} />
+                                    <Generating loading={loading} runningWorkflows={runningWorkflows} runningApiExecutions={runningExecutions} cancellingWorkflows={cancellingWorkflows} onCancelWorkflow={handleCancelWorkflow} localRunningJobs={localRunningJobs} onCancelLocalJob={cancelLocalJob} />
                                     {Object.entries(results).map(([promptId, generation], index, array) => (
                                         <div className="flex flex-col gap-4 w-full h-full" key={promptId}>
                                             <div className="flex flex-wrap w-full h-full gap-4 pt-4" key={promptId}>
@@ -1146,8 +1147,10 @@ const Generating = (props: {
     cancellingWorkflows: string[],
     loading: boolean,
     onCancelWorkflow: (promptId: string) => void,
+    localRunningJobs?: LocalRunningJob[],
+    onCancelLocalJob?: (jobId: string) => void,
 }) => {
-    const { runningWorkflows, runningApiExecutions, cancellingWorkflows, loading, onCancelWorkflow } = props;
+    const { runningWorkflows, runningApiExecutions, cancellingWorkflows, loading, onCancelWorkflow, localRunningJobs = [], onCancelLocalJob } = props;
 
     const generatingDetails = (
         <div className="flex flex-col gap-2">
@@ -1155,124 +1158,128 @@ const Generating = (props: {
         </div>
     );
 
-    if (runningWorkflows.length > 0) {
+    // Render a single generating card with optional cancel
+    const renderGeneratingCard = (key: string, options?: { isCancelling?: boolean; onCancel?: () => void }) => {
+        const { isCancelling = false, onCancel } = options || {};
         return (
-            <>
-                <IndeterminateLoadingBarStyles />
-                {runningWorkflows.map((w) => {
-                    const isCancelling = cancellingWorkflows.includes(w.promptId);
-                    
-                    return (
-                        <div key={w.promptId} className="flex flex-col gap-4 w-full">
-                            <div className="flex flex-wrap w-full gap-4 pt-4">
-                                <div key={`loading-placeholder-${w.promptId}`} className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
-                                    <AlertDialog>
-                                        <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
-                                            <AlertDialogTrigger asChild disabled={isCancelling}>
-                                                <button 
-                                                    type="button"
-                                                    disabled={isCancelling}
-                                                    className={cn(
-                                                        "w-full h-64 rounded-md flex items-center justify-center transition-all",
-                                                        isCancelling 
-                                                            ? "bg-muted/50" 
-                                                            : "bg-muted animate-pulse cursor-pointer hover:ring-2 hover:ring-primary/50"
-                                                    )}
-                                                >
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <div className={cn(
-                                                            "w-8 h-8 rounded-full",
-                                                            isCancelling 
-                                                                ? "bg-muted-foreground/10" 
-                                                                : "bg-muted-foreground/20 animate-pulse"
-                                                        )}></div>
-                                                        <span className={cn(
-                                                            "text-sm text-muted-foreground",
-                                                            !isCancelling && "animate-pulse"
-                                                        )}>
-                                                            {isCancelling ? "Cancelling..." : "Generating..."}
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            </AlertDialogTrigger>
-                                        </BlurFade>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Cancel generation?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Are you sure you want to cancel this generation? This action cannot be undone.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Continue generating</AlertDialogCancel>
-                                                <AlertDialogAction 
-                                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                    onClick={() => onCancelWorkflow(w.promptId)}
-                                                >
-                                                    Cancel generation
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                    {generatingDetails}
+            <div key={key} className="flex flex-col gap-4 w-full">
+                <div className="flex flex-wrap w-full gap-4 pt-4">
+                    <div className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
+                        <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
+                            <div className={cn(
+                                "relative w-full h-64 rounded-md flex items-center justify-center transition-all",
+                                isCancelling ? "bg-muted/50" : "bg-muted animate-pulse"
+                            )}>
+                                {onCancel && !isCancelling && (
+                                    <button
+                                        type="button"
+                                        onClick={onCancel}
+                                        className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-background/80 hover:bg-destructive hover:text-destructive-foreground border border-border flex items-center justify-center transition-colors"
+                                        title="Cancel generation"
+                                    >
+                                        <CircleX className="h-4 w-4" />
+                                    </button>
+                                )}
+                                <div className="flex flex-col items-center gap-2">
+                                    <div className={cn(
+                                        "w-8 h-8 rounded-full",
+                                        isCancelling ? "bg-muted-foreground/10" : "bg-muted-foreground/20 animate-pulse"
+                                    )}></div>
+                                    <span className={cn(
+                                        "text-sm text-muted-foreground",
+                                        !isCancelling && "animate-pulse"
+                                    )}>
+                                        {isCancelling ? "Cancelling..." : "Generating..."}
+                                    </span>
                                 </div>
                             </div>
-                            <hr className="w-full py-4 border-gray-300" />
-                        </div>
-                    );
-                })}
-            </>
-        );
-    }
-
-    if (runningApiExecutions.length > 0) {
-        return (
-            <>
-                <IndeterminateLoadingBarStyles />
-                {runningApiExecutions.map((exec) => (
-                    <div key={`api-exec-${exec.executionId}`} className="flex flex-col gap-4 w-full">
-                        <div className="flex flex-wrap w-full gap-4 pt-4">
-                            <div className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
-                                <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
-                                    <div className="w-full h-64 rounded-md bg-muted animate-pulse flex items-center justify-center">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-muted-foreground/20 animate-pulse"></div>
-                                            <span className="text-sm text-muted-foreground animate-pulse">Generating...</span>
-                                        </div>
-                                    </div>
-                                </BlurFade>
-                                {generatingDetails}
-                            </div>
-                        </div>
-                        <hr className="w-full py-4 border-gray-300" />
+                        </BlurFade>
+                        {generatingDetails}
                     </div>
-                ))}
-            </>
-        );
-    }
-
-    if (loading) {
-        return (
-            <>
-                <IndeterminateLoadingBarStyles />
-                <div className="flex flex-col gap-4 w-full">
-                    <div className="flex flex-wrap w-full gap-4 pt-4">
-                        <div key={`loading-placeholder`} className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
-                            <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
-                                <div className="w-full h-64 rounded-md bg-muted animate-pulse flex items-center justify-center">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-muted-foreground/20 animate-pulse"></div>
-                                        <span className="text-sm text-muted-foreground animate-pulse">Generating...</span>
-                                    </div>
-                                </div>
-                            </BlurFade>
-                            {generatingDetails}
-                        </div>
-                    </div>
-                    <hr className="w-full py-4 border-gray-300" />
                 </div>
-            </>
+                <hr className="w-full py-4 border-gray-300" />
+            </div>
         );
+    };
+
+    const cards: React.ReactNode[] = [];
+
+    // Remote running workflows (with confirmation dialog)
+    for (const w of runningWorkflows) {
+        const isCancelling = cancellingWorkflows.includes(w.promptId);
+        cards.push(
+            <div key={w.promptId} className="flex flex-col gap-4 w-full">
+                <div className="flex flex-wrap w-full gap-4 pt-4">
+                    <div className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
+                        <AlertDialog>
+                            <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
+                                <AlertDialogTrigger asChild disabled={isCancelling}>
+                                    <button
+                                        type="button"
+                                        disabled={isCancelling}
+                                        className={cn(
+                                            "w-full h-64 rounded-md flex items-center justify-center transition-all",
+                                            isCancelling
+                                                ? "bg-muted/50"
+                                                : "bg-muted animate-pulse cursor-pointer hover:ring-2 hover:ring-primary/50"
+                                        )}
+                                    >
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className={cn(
+                                                "w-8 h-8 rounded-full",
+                                                isCancelling ? "bg-muted-foreground/10" : "bg-muted-foreground/20 animate-pulse"
+                                            )}></div>
+                                            <span className={cn(
+                                                "text-sm text-muted-foreground",
+                                                !isCancelling && "animate-pulse"
+                                            )}>
+                                                {isCancelling ? "Cancelling..." : "Generating..."}
+                                            </span>
+                                        </div>
+                                    </button>
+                                </AlertDialogTrigger>
+                            </BlurFade>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Cancel generation?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to cancel this generation? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Continue generating</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        onClick={() => onCancelWorkflow(w.promptId)}
+                                    >
+                                        Cancel generation
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        {generatingDetails}
+                    </div>
+                </div>
+                <hr className="w-full py-4 border-gray-300" />
+            </div>
+        );
+    }
+
+    // API app executions
+    for (const exec of runningApiExecutions) {
+        cards.push(renderGeneratingCard(`api-exec-${exec.executionId}`));
+    }
+
+    // Local running jobs (with X cancel button)
+    for (const job of localRunningJobs) {
+        cards.push(renderGeneratingCard(
+            `local-job-${job.jobId}`,
+            { onCancel: onCancelLocalJob ? () => onCancelLocalJob(job.jobId) : undefined }
+        ));
+    }
+
+    if (cards.length > 0) {
+        return <><IndeterminateLoadingBarStyles />{cards}</>;
     }
 
     return null;
