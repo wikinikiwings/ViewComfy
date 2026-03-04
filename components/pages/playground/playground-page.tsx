@@ -458,10 +458,23 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
             || viewComfyState.currentViewComfy?.viewComfyJSON?.viewcomfyEndpoint
             || "Unknown Workflow";
 
+        // Extract first long-text value as prompt snippet for the generating card hover
+        const promptSnippet = (() => {
+            for (const group of data.inputs) {
+                for (const input of group.inputs) {
+                    if (input.valueType === 'long-text' && typeof input.value === 'string' && input.value.trim()) {
+                        return input.value.trim();
+                    }
+                }
+            }
+            return undefined;
+        })();
+
         const doPostParams = {
             viewComfy: generationData,
             workflow: viewComfyState.currentViewComfy?.workflowApiJSON,
             viewcomfyEndpoint: viewComfyState.currentViewComfy?.viewComfyJSON.viewcomfyEndpoint ?? "",
+            promptSnippet,
             onSuccess: (params: { promptId: string, outputs: File[] }) => {
                 // Store metadata keyed by promptId so onSetResults picks up the right data
                 generationMetaRef.current.set(params.promptId, {
@@ -1159,15 +1172,15 @@ const Generating = (props: {
     );
 
     // Render a single generating card with optional cancel
-    const renderGeneratingCard = (key: string, options?: { isCancelling?: boolean; onCancel?: () => void }) => {
-        const { isCancelling = false, onCancel } = options || {};
+    const renderGeneratingCard = (key: string, options?: { isCancelling?: boolean; onCancel?: () => void; promptSnippet?: string }) => {
+        const { isCancelling = false, onCancel, promptSnippet } = options || {};
         return (
             <div key={key} className="flex flex-col gap-4 w-full">
                 <div className="flex flex-wrap w-full gap-4 pt-4">
                     <div className="flex flex-col gap-2 sm:w-[calc(50%-2rem)] lg:w-[calc(33.333%-2rem)]">
                         <BlurFade delay={0.25} inView className="flex items-center justify-center w-full h-full">
                             <div className={cn(
-                                "relative w-full h-64 rounded-md flex items-center justify-center transition-all",
+                                "group/card relative w-full h-64 rounded-md flex items-center justify-center transition-all",
                                 isCancelling ? "bg-muted/50" : "bg-muted animate-pulse"
                             )}>
                                 {onCancel && !isCancelling && (
@@ -1192,6 +1205,13 @@ const Generating = (props: {
                                         {isCancelling ? "Cancelling..." : "Generating..."}
                                     </span>
                                 </div>
+                                {promptSnippet && !isCancelling && (
+                                    <div className="absolute inset-0 rounded-md bg-black/50 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center p-4 pointer-events-none">
+                                        <p className="text-sm text-white text-center line-clamp-4">
+                                            {promptSnippet}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </BlurFade>
                         {generatingDetails}
@@ -1274,7 +1294,10 @@ const Generating = (props: {
     for (const job of localRunningJobs) {
         cards.push(renderGeneratingCard(
             `local-job-${job.jobId}`,
-            { onCancel: onCancelLocalJob ? () => onCancelLocalJob(job.jobId) : undefined }
+            {
+                onCancel: onCancelLocalJob ? () => onCancelLocalJob(job.jobId) : undefined,
+                promptSnippet: job.promptSnippet,
+            }
         ));
     }
 

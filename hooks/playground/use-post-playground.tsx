@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface LocalRunningJob {
     jobId: string;
+    promptSnippet?: string;
 }
 
 export const usePostPlayground = () => {
@@ -14,11 +15,11 @@ export const usePostPlayground = () => {
     const abortControllers = useRef<Map<string, AbortController>>(new Map());
     const loading = localRunningJobs.length > 0;
 
-    const doPost = useCallback(async ({ viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError }: IUsePostPlayground) => {
+    const doPost = useCallback(async ({ viewComfy, workflow, viewcomfyEndpoint, onSuccess, onError, promptSnippet }: IUsePostPlayground & { promptSnippet?: string }) => {
         const jobId = uuidv4();
         const controller = new AbortController();
         abortControllers.current.set(jobId, controller);
-        setLocalRunningJobs(prev => [...prev, { jobId }]);
+        setLocalRunningJobs(prev => [...prev, { jobId, promptSnippet }]);
 
         try {
             await inferLocalComfy({
