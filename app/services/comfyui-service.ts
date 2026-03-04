@@ -21,7 +21,7 @@ export class ComfyUIService {
         this.comfyUIAPIService = new ComfyUIAPIService(this.clientId);
     }
 
-    async runWorkflow(args: IComfyInput) {
+    async runWorkflow(args: IComfyInput & { jobId?: string }) {
         let workflow = args.workflow;
 
         if (!workflow) {
@@ -33,7 +33,7 @@ export class ComfyUIService {
 
         try {
 
-            const promptData = await this.comfyUIAPIService.queuePrompt(workflow);
+            const promptData = await this.comfyUIAPIService.queuePrompt(workflow, args.jobId);
             const outputFiles = promptData.outputFiles;
             const comfyUIAPIService = this.comfyUIAPIService;
             const getFileFromComfyOutputDirectory = this.getFileFromComfyOutputDirectory;

@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+        const jobId = formData.get('jobId') as string | null;
         const comfyUIService = new ComfyUIService();
-        const stream = await comfyUIService.runWorkflow({ workflow, viewComfy });
+        const stream = await comfyUIService.runWorkflow({ workflow, viewComfy, jobId: jobId || undefined });
 
         return new NextResponse<ReadableStream<Uint8Array>>(stream, {
             headers: {

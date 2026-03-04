@@ -24,6 +24,7 @@ export const usePostPlayground = () => {
             await inferLocalComfy({
                 viewComfy, workflow, viewcomfyEndpoint, onSuccess,
                 signal: controller.signal,
+                jobId,
             });
         } catch (error: any) {
             if (error?.name === 'AbortError') {
@@ -36,7 +37,18 @@ export const usePostPlayground = () => {
         setLocalRunningJobs(prev => prev.filter(j => j.jobId !== jobId));
     }, []);
 
-    const cancelLocalJob = useCallback((jobId: string) => {
+    const cancelLocalJob = useCallback(async (jobId: string) => {
+        // First, tell ComfyUI to cancel this prompt
+        try {
+            await fetch('/api/comfy/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId }),
+            });
+        } catch (e) {
+            console.error('[Cancel] Failed to call cancel endpoint:', e);
+        }
+        // Then abort the frontend fetch
         const controller = abortControllers.current.get(jobId);
         if (controller) {
             controller.abort();
@@ -361,9 +373,9 @@ class Secret {
     }
 }
 
-const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params: { promptId: string, outputs: File[] }) => void; signal?: AbortSignal }) => {
+const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params: { promptId: string, outputs: File[] }) => void; signal?: AbortSignal; jobId?: string }) => {
 
-    const { viewComfy, workflow, viewcomfyEndpoint, onSuccess, signal } = params;
+    const { viewComfy, workflow, viewcomfyEndpoint, onSuccess, signal, jobId } = params;
 
     const url = viewcomfyEndpoint ? "/api/viewcomfy" : "/api/comfy";
 
@@ -387,6 +399,9 @@ const inferLocalComfy = async (params: IPlaygroundParams & { onSuccess: (params:
     formData.append('workflow', JSON.stringify(workflow));
     formData.append('viewComfy', JSON.stringify(viewComfyJSON));
     formData.append('viewcomfyEndpoint', viewcomfyEndpoint ?? "");
+    if (jobId) {
+        formData.append('jobId', jobId);
+    }
 
     const response = await fetch(url, {
         method: 'POST',

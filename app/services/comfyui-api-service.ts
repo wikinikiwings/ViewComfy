@@ -1,8 +1,9 @@
 import { ComfyWorkflowError } from '@/app/models/errors';
 import { ComfyUIConnRefusedError } from '@/app/constants';
 import mime from 'mime-types';
+import { registerJob, removeJob } from '@/lib/comfy-job-registry';
 
-type ComfyUIWSEventType = "status" | "executing" | "execution_cached" | "progress" | "executed" | "execution_error" | "execution_success";
+type ComfyUIWSEventType = "status" | "executing" | "execution_cached" | "progress" | "executed" | "execution_error" | "execution_success" | "execution_interrupted";
 
 interface IComfyUIWSEventData {
     type: ComfyUIWSEventType;
@@ -154,6 +155,16 @@ export class ComfyUIAPIService {
                     this.workflowCompletionPromise = undefined;
                 }
                 break;
+            case "execution_interrupted":
+                console.log("Execution interrupted:", event.data);
+                this.isPromptRunning = false;
+                this.workflowStatus = event.type;
+                this.comfyExecutionError = { exception_message: "Generation was cancelled by user" };
+                if (this.workflowCompletionPromise) {
+                    this.workflowCompletionPromise.resolve(true);
+                    this.workflowCompletionPromise = undefined;
+                }
+                break;
             case "execution_success":
                 // console.log("Execution success:", event.data);
                 this.isPromptRunning = false;
@@ -170,7 +181,7 @@ export class ComfyUIAPIService {
         }
     }
 
-    public async queuePrompt(workflow: object) {
+    public async queuePrompt(workflow: object, jobId?: string) {
         const data = {
             "prompt": workflow,
             "client_id": this.clientId,
@@ -226,6 +237,11 @@ export class ComfyUIAPIService {
                 throw new Error("Prompt ID is undefined");
             }
 
+            // Register mapping so cancel endpoint can find this ComfyUI prompt
+            if (jobId && this.promptId) {
+                registerJob(jobId, this.promptId);
+            }
+
             this.isPromptRunning = true;
             this.comfyExecutionError = undefined; // Reset error before new prompt
             this.workflowStatus = undefined;     // Reset status before new prompt
@@ -237,7 +253,7 @@ export class ComfyUIAPIService {
 
             await completionPromise; // Wait for the workflow to complete
 
-            if (this.workflowStatus === "execution_error") {
+            if (this.workflowStatus === "execution_interrupted" || this.workflowStatus === "execution_error") {
                 const errorMessage =
                     (this.comfyExecutionError && "exception_message" in this.comfyExecutionError)
                         ? (this.comfyExecutionError as { exception_message?: string }).exception_message
@@ -260,10 +276,19 @@ export class ComfyUIAPIService {
                     errors: [errorMsg]
                 });
             }
+            // Clean up job registry on completion
+            if (jobId) {
+                removeJob(jobId);
+            }
+
             return { outputFiles: this.outputFiles, promptId: this.promptId };
 
              
         } catch (error: any) {
+            // Clean up job registry on error
+            if (jobId) {
+                removeJob(jobId);
+            }
             console.error(error);
             if (error?.cause?.code === "ECONNREFUSED") {
                 throw new ComfyWorkflowError({
