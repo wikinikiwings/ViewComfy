@@ -427,6 +427,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                 alt="Output image"
                                 width={140}
                                 height={140}
+                                loading="lazy"
                                 className="rounded-md transition-all hover:scale-105 hover:cursor-pointer"
                             />
                         )}

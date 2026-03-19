@@ -28,7 +28,7 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getComfyUIRandomSeed, cn } from "@/lib/utils";
 import {
     Tooltip,
@@ -104,7 +104,7 @@ export function ViewComfyForm(args: {
     editMode?: boolean,
     downloadViewComfyJSON?: (data: IViewComfyBase) => void,
     children?: React.ReactNode,
-    isLoading?: boolean
+    isLoading?: boolean,
 
 }) {
     const { form, onSubmit, inputFieldArray, advancedFieldArray, editMode = false, isLoading = false, downloadViewComfyJSON } = args;
@@ -129,6 +129,79 @@ export function ViewComfyForm(args: {
         });
         return imageCount >= 2;
     })();
+
+    // --- Clipboard paste support ---
+    const pasteImageToFirstEmptySlot = useCallback((file: File): boolean => {
+        // Search basic inputs for the first empty image slot
+        const inputs = form.getValues('inputs') as IMultiValueInput[];
+        for (let g = 0; g < inputs.length; g++) {
+            if (inputs[g].visibility === 'deleted') continue;
+            const isGroupActive = inputs[g].visibility === 'active' || inputs[g].visibility === undefined;
+            if (!isGroupActive) continue;
+            for (let i = 0; i < inputs[g].inputs.length; i++) {
+                const input = inputs[g].inputs[i];
+                if (input.valueType === 'image' && input.visibility !== 'deleted' && input.visibility !== 'hidden') {
+                    const currentValue = form.getValues(`inputs.${g}.inputs.${i}.value` as any);
+                    if (!currentValue) {
+                        form.setValue(`inputs.${g}.inputs.${i}.value` as any, file, { shouldDirty: true });
+                        return true;
+                    }
+                }
+            }
+        }
+        // Search advanced inputs
+        const advInputs = form.getValues('advancedInputs') as IMultiValueInput[];
+        for (let g = 0; g < advInputs.length; g++) {
+            if (advInputs[g].visibility === 'deleted') continue;
+            const isGroupActive = advInputs[g].visibility === 'active' || advInputs[g].visibility === undefined;
+            if (!isGroupActive) continue;
+            for (let i = 0; i < advInputs[g].inputs.length; i++) {
+                const input = advInputs[g].inputs[i];
+                if (input.valueType === 'image' && input.visibility !== 'deleted' && input.visibility !== 'hidden') {
+                    const currentValue = form.getValues(`advancedInputs.${g}.inputs.${i}.value` as any);
+                    if (!currentValue) {
+                        form.setValue(`advancedInputs.${g}.inputs.${i}.value` as any, file, { shouldDirty: true });
+                        return true;
+                    }
+                }
+            }
+        }
+        // No empty slot found — overwrite the first image slot
+        for (let g = 0; g < inputs.length; g++) {
+            if (inputs[g].visibility === 'deleted') continue;
+            const isGroupActive = inputs[g].visibility === 'active' || inputs[g].visibility === undefined;
+            if (!isGroupActive) continue;
+            for (let i = 0; i < inputs[g].inputs.length; i++) {
+                const input = inputs[g].inputs[i];
+                if (input.valueType === 'image' && input.visibility !== 'deleted' && input.visibility !== 'hidden') {
+                    form.setValue(`inputs.${g}.inputs.${i}.value` as any, file, { shouldDirty: true });
+                    return true;
+                }
+            }
+        }
+        return false;
+    }, [form]);
+
+    // Global Ctrl+V / Cmd+V paste listener
+    useEffect(() => {
+        if (editMode) return;
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.startsWith('image/')) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        pasteImageToFirstEmptySlot(file);
+                        return;
+                    }
+                }
+            }
+        };
+        document.addEventListener('paste', handlePaste);
+        return () => document.removeEventListener('paste', handlePaste);
+    }, [editMode, pasteImageToFirstEmptySlot]);
 
     useEffect(() => {
         if (viewcomfyEndpointError && viewcomfyEndpointRef.current) {
