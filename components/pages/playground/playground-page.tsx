@@ -1302,7 +1302,7 @@ const Generating = (props: {
     }
 
     if (cards.length > 0) {
-        return <><IndeterminateLoadingBarStyles />{cards}</>;
+        return <><IndeterminateLoadingBarStyles />{cards.reverse()}</>;
     }
 
     return null;
