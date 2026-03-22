@@ -3,6 +3,10 @@ import { saveGeneration, getGenerations, deleteGeneration, getHistoryImagesDir }
 import fs from "node:fs/promises";
 import path from "node:path";
 import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
+
+const THUMB_WIDTH = 280;
+const THUMB_QUALITY = 70;
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -45,6 +49,23 @@ export async function POST(request: NextRequest) {
                 const savedFilepath = path.join(historyImagesDir, savedFilename);
                 const buffer = Buffer.from(await file.arrayBuffer());
                 await fs.writeFile(savedFilepath, buffer);
+
+                // Generate lightweight thumbnail for image files
+                if (file.type.startsWith("image/") && file.type !== "image/vnd.adobe.photoshop") {
+                    try {
+                        const baseName = savedFilename.replace(/\.[^.]+$/, "");
+                        const thumbFilename = `thumb_${baseName}.jpg`;
+                        const thumbFilepath = path.join(historyImagesDir, thumbFilename);
+                        await sharp(buffer)
+                            .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+                            .jpeg({ quality: THUMB_QUALITY })
+                            .toFile(thumbFilepath);
+                    } catch (thumbError) {
+                        console.error("Failed to generate thumbnail:", thumbError);
+                        // Non-fatal: sidebar will fall back to full image
+                    }
+                }
+
                 outputs.push({ filename: file.name, filepath: savedFilename, contentType: file.type, size: file.size });
             }
         }

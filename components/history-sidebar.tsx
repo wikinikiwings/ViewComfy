@@ -342,6 +342,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [containerHeight, setContainerHeight] = useState<number>(0);
     const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
     const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
+    const [fullImageLoaded, setFullImageLoaded] = useState(false);
     const scaleUp = false;
     const zoomFactor = 8;
 
@@ -360,8 +361,16 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         return scaleUp ? scale : Math.max(scale, 1);
     }, [scaleUp, containerWidth, containerHeight, imageNaturalWidth, imageNaturalHeight]);
 
+    // Full-resolution URL
     const getImageUrl = (output: OutputRecord) => {
         return `/api/history/image/${output.filepath}`;
+    };
+
+    // Lightweight thumbnail URL (falls back to full image if thumb doesn't exist)
+    const getThumbUrl = (output: OutputRecord) => {
+        const name = output.filepath;
+        const baseName = name.replace(/\.[^.]+$/, "");
+        return `/api/history/image/thumb_${baseName}.jpg`;
     };
 
     const isImageByMimeType = (output: OutputRecord) => {
@@ -396,6 +405,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         if (!outputs || outputs.length === 0 || !isImageByMimeType(outputs[blobIndex])) {
             return;
         }
+        setFullImageLoaded(false);
         const image = new Image();
         image.onload = () => handleImageOnLoad(image);
         image.src = getImageUrl(outputs[blobIndex]);
@@ -416,18 +426,32 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         setBlobIndex(prev => (prev < outputs.length - 1 ? prev + 1 : 0));
     };
 
+    // Drag handler — always uses the full-resolution original URL
+    const handleDragStart = (e: React.DragEvent<HTMLElement>, output: OutputRecord) => {
+        const mediaData: import("@/lib/drag-utils").DraggableMediaData = {
+            url: getImageUrl(output),
+            filename: output.filename,
+            contentType: output.content_type,
+        };
+        e.dataTransfer.setData("application/x-viewcomfy-media", JSON.stringify(mediaData));
+        e.dataTransfer.effectAllowed = "copy";
+    };
+
     return (
         <div className="relative inline-block">
-            <Dialog onOpenChange={() => setBlobIndex(0)}>
+            <Dialog onOpenChange={() => { setBlobIndex(0); setFullImageLoaded(false); }}>
                 <DialogTrigger asChild>
                     <div key={previewOutput.id + "preview-trigger"}>
                         {isImageByMimeType(previewOutput) && (
                             <img
-                                src={getImageUrl(previewOutput)}
+                                src={getThumbUrl(previewOutput)}
                                 alt="Output image"
                                 width={140}
                                 height={140}
                                 loading="lazy"
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, previewOutput)}
+                                onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(previewOutput); }}
                                 className="rounded-md transition-all hover:scale-105 hover:cursor-pointer"
                             />
                         )}
@@ -471,6 +495,15 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                 }}
                                 ref={(el: HTMLDivElement | null) => setContainer(el)}
                             >
+                                {/* Blurred thumbnail placeholder — visible until full image loads */}
+                                {!fullImageLoaded && (
+                                    <img
+                                        src={getThumbUrl(outputs[blobIndex])}
+                                        alt="Loading..."
+                                        onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]); }}
+                                        className="max-h-[85vh] w-auto object-contain rounded-md blur-sm"
+                                    />
+                                )}
                                 <TransformWrapper
                                     key={`${containerWidth}x${containerHeight}`}
                                     initialScale={imageScale}
@@ -485,7 +518,11 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                             key={outputs[blobIndex].id}
                                             src={getImageUrl(outputs[blobIndex])}
                                             alt={outputs[blobIndex].filename}
-                                            className="max-h-[85vh] w-auto object-contain rounded-md"
+                                            onLoad={() => setFullImageLoaded(true)}
+                                            className={cn(
+                                                "max-h-[85vh] w-auto object-contain rounded-md transition-opacity duration-300",
+                                                fullImageLoaded ? "opacity-100" : "opacity-0"
+                                            )}
                                         />
                                     </TransformComponent>
                                 </TransformWrapper>
