@@ -516,7 +516,17 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     backgroundColor: "black",
                                     cursor: "zoom-in"
                                 }}
-                                ref={(el: HTMLDivElement | null) => setContainer(el)}
+                                ref={(el: HTMLDivElement | null) => {
+                                    setContainer(el);
+                                    if (el) {
+                                        // Measure after dialog layout completes
+                                        requestAnimationFrame(() => {
+                                            const rect = el.getBoundingClientRect();
+                                            setContainerWidth(rect.width);
+                                            setContainerHeight(rect.height);
+                                        });
+                                    }
+                                }}
                             >
                                 <TransformWrapper
                                     key={`${containerWidth}x${containerHeight}`}
