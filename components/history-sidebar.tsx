@@ -514,10 +514,6 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     width: "100%",
                                     height: "100%",
                                     backgroundColor: "black",
-                                    backgroundImage: `url(${getThumbUrl(outputs[blobIndex])})`,
-                                    backgroundSize: "contain",
-                                    backgroundPosition: "center",
-                                    backgroundRepeat: "no-repeat",
                                     cursor: "zoom-in"
                                 }}
                                 ref={(el: HTMLDivElement | null) => setContainer(el)}
