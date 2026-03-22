@@ -356,7 +356,6 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [containerHeight, setContainerHeight] = useState<number>(0);
     const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
     const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
-
     const scaleUp = false;
     const zoomFactor = 8;
 
@@ -515,6 +514,10 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     width: "100%",
                                     height: "100%",
                                     backgroundColor: "black",
+                                    backgroundImage: `url(${getThumbUrl(outputs[blobIndex])})`,
+                                    backgroundSize: "contain",
+                                    backgroundPosition: "center",
+                                    backgroundRepeat: "no-repeat",
                                     cursor: "zoom-in"
                                 }}
                                 ref={(el: HTMLDivElement | null) => setContainer(el)}
