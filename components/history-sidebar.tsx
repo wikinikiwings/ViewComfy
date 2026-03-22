@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { History, Filter, ChevronRight, Copy, FileType, File, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -397,24 +397,17 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         return output.content_type.startsWith("image/") && output.content_type !== "image/vnd.adobe.photoshop";
     };
 
-    const handleResize = useCallback(() => {
-        if (container !== null) {
-            const rect = container.getBoundingClientRect();
-            setContainerWidth(rect.width);
-            setContainerHeight(rect.height);
-        } else {
-            setContainerWidth(0);
-            setContainerHeight(0);
-        }
-    }, [container]);
-
     useEffect(() => {
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, [handleResize]);
+        if (!container) return;
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                setContainerWidth(entry.contentRect.width);
+                setContainerHeight(entry.contentRect.height);
+            }
+        });
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, [container]);
 
     const handleImageOnLoad = (image: HTMLImageElement) => {
         setImageNaturalWidth(image.naturalWidth);
@@ -516,17 +509,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     backgroundColor: "black",
                                     cursor: "zoom-in"
                                 }}
-                                ref={(el: HTMLDivElement | null) => {
-                                    setContainer(el);
-                                    if (el) {
-                                        // Measure after dialog layout completes
-                                        requestAnimationFrame(() => {
-                                            const rect = el.getBoundingClientRect();
-                                            setContainerWidth(rect.width);
-                                            setContainerHeight(rect.height);
-                                        });
-                                    }
-                                }}
+                                ref={(el: HTMLDivElement | null) => setContainer(el)}
                             >
                                 <TransformWrapper
                                     key={`${containerWidth}x${containerHeight}`}
