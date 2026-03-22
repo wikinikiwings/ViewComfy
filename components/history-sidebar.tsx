@@ -356,7 +356,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [containerHeight, setContainerHeight] = useState<number>(0);
     const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
     const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
-    const [fullImageLoaded, setFullImageLoaded] = useState(false);
+
     const scaleUp = false;
     const zoomFactor = 8;
 
@@ -426,10 +426,8 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         if (!outputs || outputs.length === 0 || !isImageByMimeType(outputs[blobIndex])) {
             return;
         }
-        setFullImageLoaded(false);
         const image = new Image();
         image.onload = () => handleImageOnLoad(image);
-        // Try mid-res first for sizing; fall back to original
         image.onerror = () => {
             image.onerror = null;
             image.src = getImageUrl(outputs[blobIndex]);
@@ -465,7 +463,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
 
     return (
         <div className="relative inline-block">
-            <Dialog onOpenChange={() => { setBlobIndex(0); setFullImageLoaded(false); }}>
+            <Dialog onOpenChange={() => setBlobIndex(0)}>
                 <DialogTrigger asChild>
                     <div key={previewOutput.id + "preview-trigger"}>
                         {isImageByMimeType(previewOutput) && (
@@ -521,15 +519,6 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                 }}
                                 ref={(el: HTMLDivElement | null) => setContainer(el)}
                             >
-                                {/* Blurred thumbnail placeholder — visible until full image loads */}
-                                {!fullImageLoaded && (
-                                    <img
-                                        src={getThumbUrl(outputs[blobIndex])}
-                                        alt="Loading..."
-                                        onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]); }}
-                                        className="max-h-[85vh] w-auto object-contain rounded-md blur-sm"
-                                    />
-                                )}
                                 <TransformWrapper
                                     key={`${containerWidth}x${containerHeight}`}
                                     initialScale={imageScale}
@@ -544,12 +533,8 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                             key={outputs[blobIndex].id}
                                             src={getMidUrl(outputs[blobIndex])}
                                             alt={outputs[blobIndex].filename}
-                                            onLoad={() => setFullImageLoaded(true)}
                                             onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]); }}
-                                            className={cn(
-                                                "max-h-[85vh] w-auto object-contain rounded-md transition-opacity duration-300",
-                                                fullImageLoaded ? "opacity-100" : "opacity-0"
-                                            )}
+                                            className="max-h-[85vh] w-auto object-contain rounded-md"
                                         />
                                     </TransformComponent>
                                 </TransformWrapper>
