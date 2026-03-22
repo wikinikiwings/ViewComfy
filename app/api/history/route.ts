@@ -7,6 +7,8 @@ import sharp from "sharp";
 
 const THUMB_WIDTH = 280;
 const THUMB_QUALITY = 70;
+const MID_WIDTH = 1200;
+const MID_QUALITY = 85;
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -50,10 +52,11 @@ export async function POST(request: NextRequest) {
                 const buffer = Buffer.from(await file.arrayBuffer());
                 await fs.writeFile(savedFilepath, buffer);
 
-                // Generate lightweight thumbnail for image files
+                // Generate lightweight thumbnail + mid-res preview for image files
                 if (file.type.startsWith("image/") && file.type !== "image/vnd.adobe.photoshop") {
+                    const baseName = savedFilename.replace(/\.[^.]+$/, "");
+                    // Small thumbnail for sidebar list
                     try {
-                        const baseName = savedFilename.replace(/\.[^.]+$/, "");
                         const thumbFilename = `thumb_${baseName}.jpg`;
                         const thumbFilepath = path.join(historyImagesDir, thumbFilename);
                         await sharp(buffer)
@@ -62,7 +65,17 @@ export async function POST(request: NextRequest) {
                             .toFile(thumbFilepath);
                     } catch (thumbError) {
                         console.error("Failed to generate thumbnail:", thumbError);
-                        // Non-fatal: sidebar will fall back to full image
+                    }
+                    // Mid-resolution preview for dialog popup
+                    try {
+                        const midFilename = `mid_${baseName}.png`;
+                        const midFilepath = path.join(historyImagesDir, midFilename);
+                        await sharp(buffer)
+                            .resize({ width: MID_WIDTH, withoutEnlargement: true })
+                            .png({ quality: MID_QUALITY })
+                            .toFile(midFilepath);
+                    } catch (midError) {
+                        console.error("Failed to generate mid-res preview:", midError);
                     }
                 }
 

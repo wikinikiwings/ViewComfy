@@ -53,6 +53,9 @@ export function HistorySidebarContent({ open, setOpen, className }: HistorySideb
         history,
         isLoading,
         isError,
+        loadMore,
+        hasMore,
+        isLoadingMore,
     } = useLocalHistory({
         username,
         startDate: date?.from,
@@ -273,6 +276,17 @@ export function HistorySidebarContent({ open, setOpen, className }: HistorySideb
                                     </div>
                                 )
                             )}
+                            {hasMore && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-2"
+                                    onClick={loadMore}
+                                    disabled={isLoadingMore}
+                                >
+                                    {isLoadingMore ? "Loading..." : "Load more"}
+                                </Button>
+                            )}
                         </div>
                     )}
                 </ScrollArea>
@@ -373,6 +387,13 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         return `/api/history/image/thumb_${baseName}.jpg`;
     };
 
+    // Mid-resolution URL for dialog preview (falls back to full image)
+    const getMidUrl = (output: OutputRecord) => {
+        const name = output.filepath;
+        const baseName = name.replace(/\.[^.]+$/, "");
+        return `/api/history/image/mid_${baseName}.png`;
+    };
+
     const isImageByMimeType = (output: OutputRecord) => {
         return output.content_type.startsWith("image/") && output.content_type !== "image/vnd.adobe.photoshop";
     };
@@ -408,7 +429,12 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         setFullImageLoaded(false);
         const image = new Image();
         image.onload = () => handleImageOnLoad(image);
-        image.src = getImageUrl(outputs[blobIndex]);
+        // Try mid-res first for sizing; fall back to original
+        image.onerror = () => {
+            image.onerror = null;
+            image.src = getImageUrl(outputs[blobIndex]);
+        };
+        image.src = getMidUrl(outputs[blobIndex]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blobIndex, outputs]);
 
@@ -516,9 +542,10 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     >
                                         <img
                                             key={outputs[blobIndex].id}
-                                            src={getImageUrl(outputs[blobIndex])}
+                                            src={getMidUrl(outputs[blobIndex])}
                                             alt={outputs[blobIndex].filename}
                                             onLoad={() => setFullImageLoaded(true)}
+                                            onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]); }}
                                             className={cn(
                                                 "max-h-[85vh] w-auto object-contain rounded-md transition-opacity duration-300",
                                                 fullImageLoaded ? "opacity-100" : "opacity-0"
