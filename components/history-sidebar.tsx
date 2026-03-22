@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { History, Filter, ChevronRight, Copy, FileType, File, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -356,6 +356,7 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [containerHeight, setContainerHeight] = useState<number>(0);
     const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
     const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
+    const failedMidUrls = useRef<Set<string>>(new Set());
     const scaleUp = false;
     const zoomFactor = 8;
 
@@ -418,13 +419,19 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         if (!outputs || outputs.length === 0 || !isImageByMimeType(outputs[blobIndex])) {
             return;
         }
+        const midUrl = getMidUrl(outputs[blobIndex]);
         const image = new Image();
         image.onload = () => handleImageOnLoad(image);
         image.onerror = () => {
             image.onerror = null;
+            failedMidUrls.current.add(midUrl);
             image.src = getImageUrl(outputs[blobIndex]);
         };
-        image.src = getMidUrl(outputs[blobIndex]);
+        if (failedMidUrls.current.has(midUrl)) {
+            image.src = getImageUrl(outputs[blobIndex]);
+        } else {
+            image.src = midUrl;
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blobIndex, outputs]);
 
@@ -523,9 +530,15 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                                     >
                                         <img
                                             key={outputs[blobIndex].id}
-                                            src={getMidUrl(outputs[blobIndex])}
+                                            src={failedMidUrls.current.has(getMidUrl(outputs[blobIndex])) ? getImageUrl(outputs[blobIndex]) : getMidUrl(outputs[blobIndex])}
                                             alt={outputs[blobIndex].filename}
-                                            onError={(e) => { (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]); }}
+                                            onError={(e) => {
+                                                const midUrl = getMidUrl(outputs[blobIndex]);
+                                                if (!failedMidUrls.current.has(midUrl)) {
+                                                    failedMidUrls.current.add(midUrl);
+                                                    (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]);
+                                                }
+                                            }}
                                             className="max-h-[85vh] w-auto object-contain rounded-md"
                                         />
                                     </TransformComponent>
