@@ -715,7 +715,7 @@ function PlaygroundPageContent({ doPost, loading, setLoading, runningWorkflows, 
                             <div className="flex-1 h-full p-4 flex overflow-y-auto">
                                 <div className="flex flex-col w-full h-full">
                                     <Generating loading={loading} runningWorkflows={runningWorkflows} runningApiExecutions={runningExecutions} cancellingWorkflows={cancellingWorkflows} onCancelWorkflow={handleCancelWorkflow} localRunningJobs={localRunningJobs} onCancelLocalJob={cancelLocalJob} />
-                                    {Object.entries(results).reverse().map(([promptId, generation], index, array) => (
+                                    {Object.entries(results).map(([promptId, generation], index, array) => (
                                         <div className="flex flex-col gap-4 w-full h-full" key={promptId}>
                                             <div className="flex flex-wrap w-full h-full gap-4 pt-4" key={promptId}>
                                                 {generation.status && generation.status === "error" &&
