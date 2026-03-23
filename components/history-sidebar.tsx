@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { History, Filter, ChevronRight, Copy, FileType, File, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -351,46 +351,22 @@ type OutputRecord = IGenerationRecord["outputs"][number];
 
 function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
     const [blobIndex, setBlobIndex] = useState(0);
-    const [container, setContainer] = useState<HTMLDivElement | null>(null);
-    const [containerWidth, setContainerWidth] = useState<number>(0);
-    const [containerHeight, setContainerHeight] = useState<number>(0);
-    const [imageNaturalWidth, setImageNaturalWidth] = useState<number>(0);
-    const [imageNaturalHeight, setImageNaturalHeight] = useState<number>(0);
-    const failedMidUrls = useRef<Set<string>>(new Set());
-    const scaleUp = false;
-    const zoomFactor = 8;
-
-    const imageScale = useMemo((): number => {
-        if (
-            containerWidth === 0 ||
-            containerHeight === 0 ||
-            imageNaturalWidth === 0 ||
-            imageNaturalHeight === 0
-        )
-            return 0;
-        const scale = Math.min(
-            containerWidth / imageNaturalWidth,
-            containerHeight / imageNaturalHeight,
-        );
-        return scaleUp ? scale : Math.max(scale, 1);
-    }, [scaleUp, containerWidth, containerHeight, imageNaturalWidth, imageNaturalHeight]);
+    const [dialogSrcs, setDialogSrcs] = useState<Map<number, string>>(new Map());
 
     // Full-resolution URL
     const getImageUrl = (output: OutputRecord) => {
         return `/api/history/image/${output.filepath}`;
     };
 
-    // Lightweight thumbnail URL (falls back to full image if thumb doesn't exist)
+    // Lightweight thumbnail URL
     const getThumbUrl = (output: OutputRecord) => {
-        const name = output.filepath;
-        const baseName = name.replace(/\.[^.]+$/, "");
+        const baseName = output.filepath.replace(/\.[^.]+$/, "");
         return `/api/history/image/thumb_${baseName}.jpg`;
     };
 
-    // Mid-resolution URL for dialog preview (falls back to full image)
+    // Mid-resolution URL for dialog preview
     const getMidUrl = (output: OutputRecord) => {
-        const name = output.filepath;
-        const baseName = name.replace(/\.[^.]+$/, "");
+        const baseName = output.filepath.replace(/\.[^.]+$/, "");
         return `/api/history/image/mid_${baseName}.png`;
     };
 
@@ -398,42 +374,30 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         return output.content_type.startsWith("image/") && output.content_type !== "image/vnd.adobe.photoshop";
     };
 
+    // Preload dialog images for all image outputs when component mounts.
+    // Tries mid-res first, falls back to original. Stores resolved blob URL.
     useEffect(() => {
-        if (!container) return;
-        const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                setContainerWidth(entry.contentRect.width);
-                setContainerHeight(entry.contentRect.height);
+        if (!outputs || outputs.length === 0) return;
+        let cancelled = false;
+
+        const preload = async () => {
+            const { preloadWithFallback } = await import("@/lib/image-cache");
+            for (let i = 0; i < outputs.length; i++) {
+                if (cancelled) break;
+                const output = outputs[i];
+                if (!isImageByMimeType(output)) continue;
+                const midUrl = getMidUrl(output);
+                const result = await preloadWithFallback(midUrl, getImageUrl(output));
+                if (result && !cancelled) {
+                    setDialogSrcs(prev => new Map(prev).set(output.id, result));
+                }
             }
-        });
-        observer.observe(container);
-        return () => observer.disconnect();
-    }, [container]);
-
-    const handleImageOnLoad = (image: HTMLImageElement) => {
-        setImageNaturalWidth(image.naturalWidth);
-        setImageNaturalHeight(image.naturalHeight);
-    };
-
-    useEffect(() => {
-        if (!outputs || outputs.length === 0 || !isImageByMimeType(outputs[blobIndex])) {
-            return;
-        }
-        const midUrl = getMidUrl(outputs[blobIndex]);
-        const image = new Image();
-        image.onload = () => handleImageOnLoad(image);
-        image.onerror = () => {
-            image.onerror = null;
-            failedMidUrls.current.add(midUrl);
-            image.src = getImageUrl(outputs[blobIndex]);
         };
-        if (failedMidUrls.current.has(midUrl)) {
-            image.src = getImageUrl(outputs[blobIndex]);
-        } else {
-            image.src = midUrl;
-        }
+        preload();
+
+        return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [blobIndex, outputs]);
+    }, [outputs]);
 
     if (!outputs || outputs.length === 0) {
         return null;
@@ -458,6 +422,11 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
         };
         e.dataTransfer.setData("application/x-viewcomfy-media", JSON.stringify(mediaData));
         e.dataTransfer.effectAllowed = "copy";
+    };
+
+    // Resolve dialog image src: cached blob URL or mid-res URL with original fallback
+    const getDialogSrc = (output: OutputRecord) => {
+        return dialogSrcs.get(output.id) || getMidUrl(output);
     };
 
     return (
@@ -509,41 +478,25 @@ function OutputPreview({ outputs }: { outputs: OutputRecord[] }) {
                     <DialogTitle className="sr-only">Image preview</DialogTitle>
                     <div className="relative">
                         {isImageByMimeType(outputs[blobIndex]) && (
-                            <div
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    backgroundColor: "black",
-                                    cursor: "zoom-in"
-                                }}
-                                ref={(el: HTMLDivElement | null) => setContainer(el)}
+                            <TransformWrapper
+                                initialScale={1}
+                                minScale={0.5}
+                                maxScale={8}
+                                centerOnInit
                             >
-                                <TransformWrapper
-                                    key={`${containerWidth}x${containerHeight}`}
-                                    initialScale={imageScale}
-                                    minScale={imageScale}
-                                    maxScale={imageScale * zoomFactor}
-                                    centerOnInit
-                                >
-                                    <TransformComponent
-                                        wrapperStyle={{ width: "100%", height: "100%" }}
-                                    >
-                                        <img
-                                            key={outputs[blobIndex].id}
-                                            src={failedMidUrls.current.has(getMidUrl(outputs[blobIndex])) ? getImageUrl(outputs[blobIndex]) : getMidUrl(outputs[blobIndex])}
-                                            alt={outputs[blobIndex].filename}
-                                            onError={(e) => {
-                                                const midUrl = getMidUrl(outputs[blobIndex]);
-                                                if (!failedMidUrls.current.has(midUrl)) {
-                                                    failedMidUrls.current.add(midUrl);
-                                                    (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]);
-                                                }
-                                            }}
-                                            className="max-h-[85vh] w-auto object-contain rounded-md"
-                                        />
-                                    </TransformComponent>
-                                </TransformWrapper>
-                            </div>
+                                <TransformComponent>
+                                    <img
+                                        key={outputs[blobIndex].id}
+                                        src={getDialogSrc(outputs[blobIndex])}
+                                        alt={outputs[blobIndex].filename}
+                                        onError={(e) => {
+                                            // If mid-res failed and we don't have a cached blob, fall back to original
+                                            (e.target as HTMLImageElement).src = getImageUrl(outputs[blobIndex]);
+                                        }}
+                                        className="max-h-[85vh] w-auto object-contain rounded-md"
+                                    />
+                                </TransformComponent>
+                            </TransformWrapper>
                         )}
                         {outputs[blobIndex].content_type.startsWith("video/") && (
                             <video
