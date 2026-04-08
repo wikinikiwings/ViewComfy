@@ -402,24 +402,51 @@ export class ComfyUIAPIService {
 
     }
 
+    /**
+     * Uploads an image to ComfyUI's input directory via the /upload/image endpoint.
+     *
+     * @param imageFile      The file to upload.
+     * @param imageFileName  Filename to store on the server (relative to the chosen subfolder).
+     * @param subfolder      Subfolder inside `input/`. Defaults to "" (root of input/).
+     *                       Pass "clipspace" for the legacy mask flow.
+     * @param originalFileRef  Optional reference to an existing file (used by the mask flow).
+     *                         Omit for plain uploads — ComfyUI will treat the upload as a new file.
+     * @param overwrite      If true, server overwrites an existing file with the same name.
+     *                       Defaults to true so retries don't get auto-renamed by ComfyUI.
+     */
     public async uploadImage(params: {
         imageFile: File,
         imageFileName: string,
-        originalFileRef: string,
+        originalFileRef?: string,
+        subfolder?: string,
+        overwrite?: boolean,
     }) {
-        const { imageFile, imageFileName, originalFileRef } = params;
+        const {
+            imageFile,
+            imageFileName,
+            originalFileRef,
+            subfolder = "",
+            overwrite = true,
+        } = params;
+
         const formData = new FormData()
         formData.append('image', imageFile, imageFileName)
-        formData.append(
-            'original_ref',
-            JSON.stringify({
-                "filename": originalFileRef,
-                "subfolder": "",
-                "type": "input",
-            })
-        )
+        if (originalFileRef) {
+            formData.append(
+                'original_ref',
+                JSON.stringify({
+                    "filename": originalFileRef,
+                    "subfolder": "",
+                    "type": "input",
+                })
+            )
+        }
         formData.append('type', 'input')
-        formData.append('subfolder', 'clipspace')
+        formData.append('subfolder', subfolder)
+        if (overwrite) {
+            formData.append('overwrite', 'true')
+        }
+
         const response = await fetch(`${this.getUrl("http")}/upload/image`, {
             method: 'POST',
             body: formData,
